@@ -80,6 +80,8 @@ services:
       - ./backend:/app
       - ./postgres:/app/postgres:ro
       - ./corpus:/app/corpus:ro
+      - ./.env.example:/env/.env.example:ro
+      - ./.env.offline.example:/env/.env.offline.example:ro
     working_dir: /app
 
   frontend-test:

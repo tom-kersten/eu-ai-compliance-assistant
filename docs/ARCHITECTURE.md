@@ -321,7 +321,7 @@ The orchestrator yields events instead of returning a result. The API streams th
 
 ```python
 class RequestedProvision(BaseModel):
-    document: Literal["AI-verordening", "AVG", "CRA", "Omnibus"]
+    document: str
     kind: Literal["article", "annex", "recital"]
     label: str                      # '6', '4a', 'III'
     reason: str
