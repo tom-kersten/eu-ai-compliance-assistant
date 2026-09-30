@@ -1,0 +1,97 @@
+services:
+  db:
+    image: pgvector/pgvector:0.8.6-pg17
+    environment:
+      POSTGRES_DB: compliance
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U app -d compliance"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  migrate:
+    build:
+      context: ./backend
+      target: runtime
+    command: ["migrate"]
+    env_file: ${ENV_FILE:-.env}
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./postgres:/app/postgres:ro
+
+  backend:
+    build:
+      context: ./backend
+      target: runtime
+    env_file: ${ENV_FILE:-.env}
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    volumes:
+      - ./corpus:/app/corpus:ro
+      - ./postgres:/app/postgres:ro
+    ports:
+      - "8000:8000"
+
+  frontend:
+    build:
+      context: ./frontend
+      target: runtime
+    environment:
+      BACKEND_URL: http://backend:8000
+    depends_on:
+      - backend
+    ports:
+      - "8501:8501"
+
+  db-test:
+    profiles: [test]
+    image: pgvector/pgvector:0.8.6-pg17
+    tmpfs:
+      - /var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: test
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: test
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U app -d test"]
+      interval: 2s
+      timeout: 5s
+      retries: 15
+
+  backend-test:
+    profiles: [test]
+    build:
+      context: ./backend
+      target: dev
+    environment:
+      TEST_DATABASE_URL: postgresql://app:test@db-test:5432/test
+      PYTHONPATH: /app/src
+    depends_on:
+      db-test:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+      - ./postgres:/app/postgres:ro
+      - ./corpus:/app/corpus:ro
+    working_dir: /app
+
+  frontend-test:
+    profiles: [test]
+    build:
+      context: ./frontend
+      target: dev
+    environment:
+      PYTHONPATH: /app/src
+    volumes:
+      - ./frontend:/app
+    working_dir: /app
+
+volumes:
+  pgdata: {}

@@ -1,0 +1,27 @@
+[project]
+name = "frontend"
+version = "0.1.0"
+description = "EU AI compliance assistant UI"
+requires-python = ">=3.12"
+dependencies = [
+    "streamlit>=1.64.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+    "ruff>=0.16.9",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+cache_dir = "/tmp/pytest_cache"
+
+[tool.ruff]
+target-version = "py312"
+line-length = 88
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
