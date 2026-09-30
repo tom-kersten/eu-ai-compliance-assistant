@@ -1,0 +1,32 @@
+snapshot: 2026-08-11
+documents:
+  - key: AI-verordening
+    file: raw/2024-1689_AIACT.html
+    parser: consolidated
+    short_name: AI-verordening
+    long_name: verordening artificiële intelligentie
+    identifier: Verordening (EU) 2024/1689
+    include: all
+  - key: AVG
+    file: raw/2016-679_GDPR.html
+    parser: consolidated
+    short_name: AVG
+    long_name: algemene verordening gegevensbescherming
+    identifier: Verordening (EU) 2016/679
+    include: all
+  - key: CRA
+    file: raw/2024-2847_CRA.html
+    parser: consolidated
+    short_name: CRA
+    long_name: Verordening cyberweerbaarheid
+    identifier: Verordening (EU) 2024/2847
+    include: all
+  - key: Omnibus
+    file: raw/2026-1744_Omnibus.html
+    parser: oj
+    short_name: Omnibus
+    long_name: Digitale omnibus inzake AI
+    identifier: Verordening (EU) 2026/1744
+    include:
+      recitals: all
+      articles: [art_4]
