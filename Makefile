@@ -42,9 +42,12 @@ migrate: ## Apply pending migrations
 	@test -f .env || { echo "Missing .env. Copy .env.example to .env."; exit 1; }
 	ENV_FILE=.env $(COMPOSE) --env-file .env run --rm migrate
 
-new-migration: ## Create the next numbered migration file (needs T2)
-	@echo "new-migration: not implemented until T2 (migration runner)."
-	@exit 1
+new-migration: ## Create the next numbered migration file in postgres/migrations/
+	@test -n "$(name)" || { echo "Usage: make new-migration name=<snake_case>"; exit 1; }
+	$(COMPOSE) $(PROFILE_TEST) run --rm --no-deps \
+		-v "$(CURDIR)/postgres/migrations:/migrations:rw" \
+		backend-test \
+		python -m app.store.migrate new-migration "$(name)" --directory /migrations
 
 ingest: ## Run ingestion into the migrated database (needs T9)
 	@echo "ingest: not implemented until T9 (ingestion command)."

@@ -25,7 +25,9 @@ RUN --mount=type=cache,target=/home/app/.cache/uv,uid=1000,gid=1000 \
     uv sync --frozen --no-dev --no-install-project
 
 USER root
-RUN printf '%s\n' '#!/bin/sh' 'echo "migrate: placeholder until T2"' 'exit 0' \
+RUN printf '%s\n' \
+        '#!/bin/sh' \
+        'exec python -m app.store.migrate "$@"' \
     > /usr/local/bin/migrate \
     && chmod 755 /usr/local/bin/migrate
 
