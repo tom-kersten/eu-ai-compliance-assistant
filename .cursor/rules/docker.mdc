@@ -1,0 +1,14 @@
+---
+description: Rules for Docker, Compose, the Makefile, and environment files
+globs: docker-compose.yml, Makefile, **/Dockerfile, .env*
+alwaysApply: false
+---
+
+# Docker and tooling rules
+
+- **Pin image tags.** No `latest`. Pin vLLM, pgvector, and base images.
+- **Multi-stage Dockerfiles** with a `runtime` and a `dev` target. `dev` adds test dependencies. Run as a non-root user. Install dependencies with `uv` from the committed lockfile.
+- **Compose profiles:** `offline` (vLLM services) and `test` (`db-test`, `backend-test`, `frontend-test`). The default stack is `db`, `migrate`, `backend`, `frontend`. `backend` waits for `migrate` to complete successfully. Add healthchecks to services that others depend on.
+- **Makefile targets are thin wrappers** around `docker compose` or `pytest` in a container, with no logic of their own. Every target has a `## description` comment so `make help` lists it. `make test` excludes `test-live`.
+- `.env` and `.env.offline` are never committed. `.env.example` and `.env.offline.example` are kept in sync with `app/config.py` and with `docs/ARCHITECTURE.md` section 10. A new setting updates all three.
+- vLLM flags differ between versions. Pin the version, and document verified flags in `docs/PROVIDER_NOTES.md`. Quantization and maximum context length are supplied through environment variables.

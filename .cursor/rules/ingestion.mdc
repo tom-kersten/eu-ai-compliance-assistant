@@ -1,0 +1,16 @@
+---
+description: Rules for parsing, chunking, and ingesting the corpus
+globs: backend/src/app/ingestion/**/*.py, corpus/**
+alwaysApply: false
+---
+
+# Ingestion rules
+
+- **Input comes only from `corpus/raw`**, selected by `corpus/manifest.yaml`. Never fetch from the network.
+- **Two HTML layouts**, two parsers behind one interface: `consolidated` (AI Act, AVG, CRA) and `oj` (Omnibus). The element ids `art_*`, `rct_*`, `anx_*` are the shared anchors. The Omnibus file has an XML declaration, so handle the parser choice deliberately and test both layouts against the real files.
+- **Amendment markers** (`docs/ARCHITECTURE.md` section 5): walk the document in order and track the current marker as running state. A marker before an article element applies until the next marker. Checking for markers only inside an article misses Article 4, 4 bis, 60 bis, and 75 bis to 75 quater. Set `amended_by = ['Omnibus']` for any text under `M1`. Corrigendum markers (`C1`, `C2`) are not amendments. Strip every marker character (`▼ ► ◄` forms). A test asserts that none remains in any chunk of the real files.
+- **Header and body** follow the specification in `docs/ARCHITECTURE.md` section 5. Labels and titles come from the source headings, never derived from ids. The seven real examples in the document are golden tests. The body excludes the heading elements, and each numbered paragraph and list item starts on its own line.
+- **Normalization is limited** to whitespace and marker stripping. Never edit, reword, or correct legal text. Titles keep their source capitalization.
+- **Chunking:** one chunk per article, annex, or recital. Split only when the estimated tokens, header included, exceed `SPLIT_TOKEN_LIMIT`. Split evenly at paragraph boundaries into the fewest parts that fit. A single paragraph over the limit is split at sentence boundaries. Use a conservative estimate (`ceil(len(text) / 3)`) behind one replaceable function. Cover the split path with a synthetic over-long article, since no real provision reaches the limit.
+- **Deterministic:** the same input gives the same rows. `corpus_hash` is computed from the file contents.
+- **Embedding:** in batches through the `EmbeddingClient`. Verify every vector has the configured dimension. Write provisions and `index_meta` in one transaction. `--reset` truncates provisions first. Ingestion never creates schema.

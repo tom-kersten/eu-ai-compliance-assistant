@@ -1,0 +1,18 @@
+---
+description: Python conventions for the FastAPI backend
+globs: backend/src/**/*.py
+alwaysApply: false
+---
+
+# Backend Python conventions
+
+- Python 3.12 or newer. Type hints on every function signature. Format and lint with `ruff`. Fix warnings, do not silence them.
+- Pydantic v2 models at every boundary: API requests and responses, SSE events, LLM structured outputs, settings. Use `ConfigDict(extra="forbid")` on LLM output models and API models.
+- Configuration is read only through `app.config.Settings` (pydantic-settings). No `os.environ` anywhere else.
+- Async for all I/O. Database access uses async psycopg 3 with a connection pool created at startup and injected. No global connections.
+- SQL lives only in `store/`. Always parameterized, never values formatted into SQL strings. Vectors are passed with `pgvector-python`.
+- Dependency direction (`docs/ARCHITECTURE.md` section 3): `pipeline` imports only `schemas` and the protocols in `providers/base.py`. `ingestion` and `pipeline` never import each other. Wiring happens in `api/`.
+- Inject dependencies through function arguments or FastAPI `Depends`. No module-level mutable state.
+- Define domain exceptions in `app/errors.py`. The API layer maps them to error codes. No bare `except`, no swallowed exceptions.
+- Log with the standard `logging` module, key=value fields, and a request id on every line. No `print`. Never log keys. Message content only at DEBUG.
+- Keep functions short and single-purpose. No dead code and no commented-out code.

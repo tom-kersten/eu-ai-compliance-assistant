@@ -1,0 +1,15 @@
+---
+description: Rules for database migrations
+globs: postgres/migrations/**
+alwaysApply: false
+---
+
+# Migration rules
+
+- Files are named `NNNN_snake_case.sql`, zero-padded to four digits, with the next number in sequence. Create them with `make new-migration name=...`.
+- **Forward-only.** No down migrations. **Never edit a migration that has been applied.** The runner stores a checksum and stops on a mismatch. Fix mistakes with a new migration.
+- Plain SQL. Each file runs in one transaction, so do not use statements that cannot run in a transaction (for example `CREATE INDEX CONCURRENTLY`).
+- `schema_migrations` is created by the runner, not by a migration.
+- The vector dimension is fixed in the migration (`vector(2000)`) and must equal `EMBEDDING_DIMENSIONS`. Changing the model or dimension is a new migration that recreates the column, followed by re-ingestion.
+- Schema and reference data belong in migrations. Corpus content does not: ingestion loads it.
+- Every new table or constraint gets a `db` test.

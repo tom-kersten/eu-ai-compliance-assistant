@@ -1,0 +1,18 @@
+---
+description: Rules for the Streamlit frontend
+globs: frontend/**/*.py
+alwaysApply: false
+---
+
+# Frontend rules
+
+- **Thin UI.** No business logic. All behavior goes through the backend API. Streamlit holds only rendering and session state.
+- **`client.py`** wraps the `POST /v1/ask` Server-Sent Events stream (`httpx` streaming) and yields typed events. The UI code never parses raw SSE.
+- **Session state** (`st.session_state`) keys are defined in `state.py`: message history, situation, last response. Nothing is persisted. Assistant messages keep the `action` from the `final` event and send it back with the history.
+- **Progress:** show the steps with `st.status` as `status`, `retrieved`, and `selection` events arrive, including which provisions were found, kept, and added.
+- **Answer display:** answer text, then the cited provisions, each in an expander with header and full text. Clarifying questions appear as a normal assistant message.
+- **Situation panel:** editable role, domain, and notes, sent with every request.
+- **Always visible:** the not-legal-advice notice, the EU assumption, and the corpus snapshot date.
+- **All user-facing strings are Dutch** and live in `strings.py`. Map backend error codes to Dutch messages there.
+- Tests cover `client.py` parsing (with recorded event streams) and `state.py` helpers. Rendering gets at most a smoke test with `streamlit.testing.v1.AppTest`.
+- No secrets in the frontend. It knows only `BACKEND_URL`.

@@ -1,0 +1,22 @@
+---
+description: Rules for the retrieval and answer pipeline
+globs: backend/src/app/pipeline/**/*.py
+alwaysApply: false
+---
+
+# Pipeline rules
+
+- **Steps are plain functions** with explicit inputs and outputs: build query, retrieve, select, resolve, answer, validate. No hidden I/O. Providers and the repository are injected as Protocols.
+- **The orchestrator is an async generator** that yields typed events (`status`, `retrieved`, `selection`, `final`, `error`). It knows nothing about SSE or HTTP. Formatting happens in `api/sse.py`.
+- **Flow is fixed** (`docs/REFERENCE.md` section 9):
+  1. Build the retrieval query from the last `RETRIEVAL_HISTORY_TURNS` user messages.
+  2. Vector search, top `RETRIEVAL_TOP_K`, above `SIMILARITY_THRESHOLD`. If nothing passes, emit `final` with `cannot_answer` and make **no LLM call**.
+  3. Call 1 (selection). Validate. Resolve requested provisions by exact lookup, deduplicate, apply the cap, single round only.
+  4. If the final context is empty, emit `cannot_answer` and **skip call 2**.
+  5. Call 2 (reasoning and answer). Validate. Emit `final`.
+- **At most two LLM calls per question.** No extra calls, no loops, no recursive reference following.
+- **Validate every LLM output** against the rules in `docs/ARCHITECTURE.md` section 6 (`keep` and `discard` cover the retrieved set exactly once, citations are a subset of the final context, `clarify` and `cannot_answer` shapes, no second consecutive clarification). On failure, retry up to `LLM_MAX_RETRIES`, then emit an `error` event. Never return unvalidated output.
+- **Unresolvable requests are never dropped.** Failed lookups and external references are passed to call 2 as unavailable references.
+- **Enforce `PROMPT_TOKEN_BUDGET`** before each call by dropping the lowest-ranked provisions.
+- **Discarded provisions** are not shown in the UI and cannot be cited.
+- Every step is testable with the fakes and without network access.

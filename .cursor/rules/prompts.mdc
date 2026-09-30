@@ -1,0 +1,17 @@
+---
+description: Rules for writing and testing the LLM prompts
+globs: backend/src/app/pipeline/prompts/**
+alwaysApply: false
+---
+
+# Prompt rules
+
+- Follow `docs/PROMPT_SPEC.md`. It defines what each prompt must do. Do not add behavior that it does not describe without asking.
+- Instructions are written in English. Output is in Dutch. The user is addressed formally (`u`, `uw`).
+- Provisions are formatted exactly as in the spec: `<provision ref="...">`, then the header, a blank line, and the body, then `</provision>`. Every supplied provision appears once.
+- Do not describe the JSON shape in prose. The structured-output schema enforces it.
+- Prompt builders are pure functions from inputs to a list of messages. No I/O and no clock.
+- Each prompt has a version string constant. It is logged with every call and included in `usage`.
+- Test builders with golden files for fixed fixtures. Also assert that every supplied ref appears in the rendered prompt.
+- No few-shot examples unless the eval set shows a behavior that instructions alone do not fix. Keep any example short.
+- Never put secrets or real user data in a prompt file.

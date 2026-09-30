@@ -1,0 +1,18 @@
+---
+description: Test-driven development rules for all test code
+globs: **/tests/**/*.py
+alwaysApply: false
+---
+
+# Testing rules
+
+- **Test first.** Write the failing test, run it and see it fail for the right reason, then implement. One behavior per test. Name tests `test_<unit>_<behavior>`.
+- **Markers:** `unit`, `db`, `api`, `live`. Register them in `pyproject.toml`. `live` is excluded from the default run and from `make test`.
+- **`unit` and `api` tests use no network and no real database.** Use the fakes from `app.providers.fakes`: a deterministic hash-based fake embedder, and a scripted fake LLM that returns queued responses.
+- **`db` tests use a real pgvector database** (the `db-test` service). Build the schema by running the real migrations. Isolate tests from each other (transaction rollback or truncation). Never mock the database in these tests.
+- **Adapter tests** for HTTP clients use `respx`. Test request shape (for example that `dimensions` is sent) and response handling.
+- **Golden tests** for parsers, chunker, and header builder use the real files in `corpus/raw`. Expected strings live in `tests/golden/`. Change a golden file only on purpose, and say why in the summary.
+- **Test behavior, not implementation.** Never assert exact LLM prose. Assert structure, routing, validation outcomes, and which provisions end up in the context.
+- **Every validation rule** in `docs/ARCHITECTURE.md` section 6 and every failure mode in the pipeline has its own test.
+- Async tests run with `pytest-asyncio` in auto mode. No `sleep` calls, no dependence on the clock or on test order.
+- A bug fix starts with a test that reproduces the bug.
