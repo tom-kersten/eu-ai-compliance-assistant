@@ -20,3 +20,22 @@ class MissingCorpusFile(Exception):
     def __init__(self, path: str) -> None:
         self.path = path
         super().__init__(f"corpus file not found: {path}")
+
+
+class UnknownAmendment(Exception):
+    """An amended_by key is not present in the corpus manifest."""
+
+    def __init__(self, key: str) -> None:
+        self.key = key
+        super().__init__(f"unknown amendment document key: {key}")
+
+
+class ChunkTooLarge(Exception):
+    """A single sentence exceeds the split token limit and cannot be chunked."""
+
+    def __init__(self, token_estimate: int, token_limit: int) -> None:
+        self.token_estimate = token_estimate
+        self.token_limit = token_limit
+        super().__init__(
+            f"sentence token estimate {token_estimate} exceeds limit {token_limit}"
+        )
