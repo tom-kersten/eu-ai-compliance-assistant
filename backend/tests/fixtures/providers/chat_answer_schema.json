@@ -1,0 +1,54 @@
+{
+  "id": "gen-1790801784-CsTAQlT2nZQjEUbsyjvI",
+  "object": "chat.completion",
+  "created": 1790801784,
+  "model": "qwen/qwen3.8-27b",
+  "provider": "Darkbloom",
+  "system_fingerprint": null,
+  "service_tier": null,
+  "choices": [
+    {
+      "index": 0,
+      "logprobs": null,
+      "finish_reason": "stop",
+      "native_finish_reason": "stop",
+      "message": {
+        "role": "assistant",
+        "content": "\n\n{\n  \"reasoning\": \"Het verzoek is een gestructureerde classificatie en er is voldoende informatie om de vraag te beantwoorden.\",\n  \"action\": \"answer\",\n  \"answer\": \"Een aanbieder brengt een AI-systeem in de handel.\",\n  \"clarifying_questions\": [],\n  \"citations\": [\n    \"AI-verordening:art_3\"\n  ],\n  \"situation\": {\n    \"role\": \"unknown\",\n    \"domain\": null,\n    \"notes\": null\n  }\n}",
+        "refusal": null,
+        "reasoning": "We need to respond with JSON only. User explicitly requests: action='answer', answer='Een aanbieder brengt een AI-systeem in de handel.', clarifying_questions=[], citations=['AI-verordening:art_3'], situation role='unknown', domain=null, notes=null, and a short reasoning string first.\n\nNeed ensure JSON schema. Need produce JSON with keys: reasoning, action, answer, clarifying_questions, citations, situation. situation requires role, domain, notes. role enum includes unknown. domain string|null. notes string|null. We must set action answer, answer exact? likely. citations array with exact string. reasoning short. No markdown. Ensure valid JSON.\n",
+        "reasoning_details": [
+          {
+            "type": "reasoning.text",
+            "text": "We need to respond with JSON only. User explicitly requests: action='answer', answer='Een aanbieder brengt een AI-systeem in de handel.', clarifying_questions=[], citations=['AI-verordening:art_3'], situation role='unknown', domain=null, notes=null, and a short reasoning string first.\n\nNeed ensure JSON schema. Need produce JSON with keys: reasoning, action, answer, clarifying_questions, citations, situation. situation requires role, domain, notes. role enum includes unknown. domain string|null. notes string|null. We must set action answer, answer exact? likely. citations array with exact string. reasoning short. No markdown. Ensure valid JSON.\n",
+            "format": "unknown",
+            "index": 0
+          }
+        ]
+      }
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 325,
+    "completion_tokens": 264,
+    "total_tokens": 589,
+    "cost": 0.00059705,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.00059705,
+      "upstream_inference_prompt_cost": 1.625e-05,
+      "upstream_inference_completions_cost": 0.0005808
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 139,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  }
+}

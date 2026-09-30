@@ -1,0 +1,54 @@
+{
+  "id": "gen-1790801718-rJzdl6EzLV2xw9nDrAbe",
+  "object": "chat.completion",
+  "created": 1790801718,
+  "model": "qwen/qwen3.8-27b",
+  "provider": "Darkbloom",
+  "system_fingerprint": null,
+  "service_tier": null,
+  "choices": [
+    {
+      "index": 0,
+      "logprobs": null,
+      "finish_reason": "stop",
+      "native_finish_reason": "stop",
+      "message": {
+        "role": "assistant",
+        "content": "\n\n{\"keep\":[\"AI-verordening:art_3\"],\"discard\":[\"AI-verordening:art_50\"],\"request\":[],\"external_references\":[]}",
+        "refusal": null,
+        "reasoning": "We need answer user's request: \"Return JSON only. keep=['AI-verordening:art_3'], discard=['AI-verordening:art_50'], request=[], external_references=[].\"\nNeed output JSON only likely exact arrays? User says Return JSON only. keep=... maybe wants object with keys keep discard request external_references. They gave values. Need output JSON only:\n{\"keep\":[\"AI-verordening:art_3\"],\"discard\":[\"AI-verordening:art_50\"],\"request\":[],\"external_references\":[]}\nEnsure no markdown.\n",
+        "reasoning_details": [
+          {
+            "type": "reasoning.text",
+            "text": "We need answer user's request: \"Return JSON only. keep=['AI-verordening:art_3'], discard=['AI-verordening:art_50'], request=[], external_references=[].\"\nNeed output JSON only likely exact arrays? User says Return JSON only. keep=... maybe wants object with keys keep discard request external_references. They gave values. Need output JSON only:\n{\"keep\":[\"AI-verordening:art_3\"],\"discard\":[\"AI-verordening:art_50\"],\"request\":[],\"external_references\":[]}\nEnsure no markdown.\n",
+            "format": "unknown",
+            "index": 0
+          }
+        ]
+      }
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 317,
+    "completion_tokens": 151,
+    "total_tokens": 468,
+    "cost": 0.00034805,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.00034805,
+      "upstream_inference_prompt_cost": 1.585e-05,
+      "upstream_inference_completions_cost": 0.0003322
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 117,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  }
+}

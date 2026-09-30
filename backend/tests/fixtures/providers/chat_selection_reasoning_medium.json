@@ -1,0 +1,54 @@
+{
+  "id": "gen-1790802116-1m39xQVseAeN7Cagqy1w",
+  "object": "chat.completion",
+  "created": 1790802116,
+  "model": "qwen/qwen3.8-27b",
+  "provider": "Phala",
+  "system_fingerprint": null,
+  "service_tier": null,
+  "choices": [
+    {
+      "index": 0,
+      "logprobs": null,
+      "finish_reason": "stop",
+      "native_finish_reason": "stop",
+      "message": {
+        "role": "assistant",
+        "content": "{\"keep\":[\"AI-verordening:art_3\"],\"discard\":[\"AI-verordening:art_50\"],\"request\":[],\"external_references\":[]}",
+        "refusal": null,
+        "reasoning": "The user is asking me to return JSON that matches a schema. They've specified:\n- keep: ['AI-verordening:art_3']\n- discard: ['AI-verordening:art_50']\n- request: []\n- external_references: []\n\nThey want me to return JSON only. Let me construct the JSON response with these fields.\n```json\n{\n  \"keep\": [\"AI-verordening:art_3\"],\n  \"discard\": [\"AI-verordening:art_50\"],\n  \"request\": [],\n  \"external_references\": []\n}\n```\n\nThis looks straightforward. The user wants a JSON object with those four keys and their respective values. Let me verify this matches what was requested - yes, keep, discard, request, and external_references are all present with the correct values.\n",
+        "reasoning_details": [
+          {
+            "type": "reasoning.text",
+            "text": "The user is asking me to return JSON that matches a schema. They've specified:\n- keep: ['AI-verordening:art_3']\n- discard: ['AI-verordening:art_50']\n- request: []\n- external_references: []\n\nThey want me to return JSON only. Let me construct the JSON response with these fields.\n```json\n{\n  \"keep\": [\"AI-verordening:art_3\"],\n  \"discard\": [\"AI-verordening:art_50\"],\n  \"request\": [],\n  \"external_references\": []\n}\n```\n\nThis looks straightforward. The user wants a JSON object with those four keys and their respective values. Let me verify this matches what was requested - yes, keep, discard, request, and external_references are all present with the correct values.\n",
+            "format": "unknown",
+            "index": 0
+          }
+        ]
+      }
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 93,
+    "completion_tokens": 211,
+    "total_tokens": 304,
+    "cost": 0.000409575,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.000409575,
+      "upstream_inference_prompt_cost": 1.395e-05,
+      "upstream_inference_completions_cost": 0.000395625
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 179,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  }
+}

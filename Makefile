@@ -9,7 +9,7 @@ PROFILE_TEST := --profile test
 
 .PHONY: help build up up-offline down clean logs ps migrate new-migration \
 	ingest ingest-reset psql test test-unit test-api test-db test-frontend \
-	test-live eval lint fmt
+	test-live eval lint fmt verify-providers
 
 help: ## List all targets with a one-line description
 	@awk 'BEGIN {FS = ":.*##"; printf "Targets:\n"} \
@@ -81,15 +81,29 @@ test-live: ## Run the opt-in suite against real providers
 	$(COMPOSE) $(PROFILE_TEST) run --rm backend-test \
 		pytest -m live -o addopts=
 
+verify-providers: ## Probe OpenRouter and write PROVIDER_NOTES.md (needs keys)
+	@test -f .env || { echo "Missing .env. Copy .env.example to .env and fill secrets."; exit 1; }
+	set -a; . ./.env; set +a; \
+	$(COMPOSE) $(PROFILE_TEST) run --rm --no-deps \
+		-e LLM_API_KEY -e EMBEDDING_API_KEY \
+		-e LLM_BASE_URL -e EMBEDDING_BASE_URL \
+		-e EMBEDDING_MODEL -e SELECTION_MODEL -e ANSWER_MODEL \
+		-e EMBEDDING_DIMENSIONS -e LLM_TIMEOUT_SECONDS \
+		-v "$(CURDIR)/docs:/docs:rw" \
+		-e PROVIDER_NOTES_PATH=/docs/PROVIDER_NOTES.md \
+		-e PYTHONPATH=/app/src:/app \
+		backend-test \
+		python scripts/verify_providers.py
+
 eval: ## Run the retrieval evaluation against the current index (needs T14)
 	@echo "eval: not implemented until T14 (eval runner)."
 	@exit 1
 
 lint: ## Check ruff formatting and lint rules
 	$(COMPOSE) $(PROFILE_TEST) run --rm --no-deps backend-test \
-		ruff check src tests && \
+		ruff check src tests scripts && \
 	$(COMPOSE) $(PROFILE_TEST) run --rm --no-deps backend-test \
-		ruff format --check src tests && \
+		ruff format --check src tests scripts && \
 	$(COMPOSE) $(PROFILE_TEST) run --rm --no-deps frontend-test \
 		ruff check src tests && \
 	$(COMPOSE) $(PROFILE_TEST) run --rm --no-deps frontend-test \
@@ -97,9 +111,9 @@ lint: ## Check ruff formatting and lint rules
 
 fmt: ## Apply ruff formatting and lint fixes
 	$(COMPOSE) $(PROFILE_TEST) run --rm --no-deps backend-test \
-		ruff check --fix src tests && \
+		ruff check --fix src tests scripts && \
 	$(COMPOSE) $(PROFILE_TEST) run --rm --no-deps backend-test \
-		ruff format src tests && \
+		ruff format src tests scripts && \
 	$(COMPOSE) $(PROFILE_TEST) run --rm --no-deps frontend-test \
 		ruff check --fix src tests && \
 	$(COMPOSE) $(PROFILE_TEST) run --rm --no-deps frontend-test \
