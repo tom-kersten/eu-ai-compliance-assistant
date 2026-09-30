@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import date, datetime
 from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -37,3 +38,31 @@ class RetrievedProvision(Provision):
     """A provision returned by vector search, with cosine similarity."""
 
     similarity: float
+
+
+class StoredProvision(Provision):
+    """A provision row including its embedding vector."""
+
+    embedding: list[float]
+
+
+class IndexMeta(BaseModel):
+    """Single-row metadata for the current index."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    embedding_model: str
+    dimension: int
+    serving_profile: str
+    corpus_snapshot: date
+    corpus_hash: str
+    ingested_at: datetime
+
+
+class DocumentCount(BaseModel):
+    """Provision count for one corpus document."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    doc: DocumentName
+    provision_count: int
