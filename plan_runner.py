@@ -58,6 +58,7 @@ ANSWER_SCHEMA = {
     "properties": {
         "answers": {
             "type": "array",
+            "minItems": 1,
             "items": {
                 "type": "object",
                 "properties": {
