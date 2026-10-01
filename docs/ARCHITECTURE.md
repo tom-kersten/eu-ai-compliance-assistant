@@ -453,6 +453,7 @@ All configuration is environment variables. `.env.example` holds the online defa
 | `PROMPT_TOKEN_BUDGET` | per profile | Lower-ranked chunks are dropped above it. |
 | `RETRIEVAL_HISTORY_TURNS` | `5` | Number of most recent user messages used to form the retrieval query. |
 | `LLM_TIMEOUT_SECONDS`, `LLM_MAX_RETRIES` | `120`, `1` | |
+| `SERVING_PROFILE` | `online` | Which serving profile to record in index_meta (`online` or `offline`). |
 
 ## 11. Deployment
 

@@ -40,6 +40,7 @@ class Settings(BaseSettings):
     embedding_dimensions: Annotated[int, Field(gt=0)] = 2000
     embedding_batch_size: Annotated[int, Field(gt=0)] = 100
     database_url: str = "postgresql://app:app@db:5432/compliance"
+    serving_profile: str = "online"
     retrieval_top_k: Annotated[int, Field(gt=0)] = 10
     similarity_threshold: EmptyAsNoneFloat = None
     max_added_provisions: EmptyAsNoneInt = None

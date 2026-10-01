@@ -30,6 +30,7 @@ _SETTINGS_ENV_NAMES = {
     "RETRIEVAL_HISTORY_TURNS",
     "LLM_TIMEOUT_SECONDS",
     "LLM_MAX_RETRIES",
+    "SERVING_PROFILE",
 }
 
 _ENV_VAR_LINE = re.compile(r"^([A-Z][A-Z0-9_]*)=", re.MULTILINE)
@@ -72,6 +73,7 @@ def test_settings_defaults_when_env_unset(monkeypatch: pytest.MonkeyPatch) -> No
     assert settings.retrieval_history_turns == 5
     assert settings.llm_timeout_seconds == 120
     assert settings.llm_max_retries == 1
+    assert settings.serving_profile == "online"
 
 
 @pytest.mark.unit
