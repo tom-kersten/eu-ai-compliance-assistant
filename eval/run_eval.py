@@ -1,12 +1,20 @@
 \"\"\"CLI to run the evaluation set."""
 from __future__ import annotations
+
 import argparse
+import asyncio
 import json
-from datetime import datetime
+from datetime import date, datetime
 from pathlib import Path
 
-from .models import EvalReport, EvalReportItem
+from app.config import Settings
+from app.pipeline import orchestrator as orch
+from app.schemas.api import AskRequest
+from app.schemas.llm import Message, Situation
+
+from . import metrics as eval_metrics
 from .fakes import fake_for_question
+from .models import EvalReport, EvalReportItem
 
 
 def load_questions(path: Path):
@@ -50,7 +58,59 @@ def main(argv=None):
     if args.use_fakes:
         report = run_use_fakes(questions)
     else:
-        raise SystemExit("Only --use-fakes is implemented in this test runner.")
+        # live path: require provider keys present
+        settings = Settings()
+        if not settings.embedding_api_key or not settings.llm_api_key:
+            raise SystemExit("Missing provider configuration for live eval")
+
+        async def _run_one(q):
+            # build a minimal AskRequest
+            msg = Message(role="user", content=q["question"])
+            req = AskRequest(messages=[msg], situation=Situation())
+            retrieved = None
+            selection = None
+            final = None
+            async for ev in orch.run(
+                req,
+                settings=settings,
+                embedder=None,
+                llm=None,
+                repository=None,
+                documents=[],
+                snapshot=date.today(),
+            ):
+                if getattr(ev, "event", None) == "retrieved":
+                    retrieved = ev
+                if getattr(ev, "event", None) == "selection":
+                    selection = ev
+                if getattr(ev, "event", None) == "final":
+                    final = ev
+                    break
+            # build report item from final and events
+            vv = False
+            if retrieved:
+                vv = bool(eval_metrics.vector_hit(retrieved, q.get("must", [])))
+            sv = False
+            if selection:
+                sv = bool(eval_metrics.selection_hit(selection, q.get("must", [])))
+            return EvalReportItem(
+                id=q["id"],
+                expected_behavior=q["expected_behavior"],
+                actual_action=final.action if final else "error",
+                behavior_match=(
+                    (q["expected_behavior"] == final.action) if final else False
+                ),
+                vector_hit=vv,
+                selection_hit=sv,
+                llm_call_count=final.usage.calls if final else 0,
+                prompt_tokens=final.usage.prompt_tokens if final else 0,
+                completion_tokens=final.usage.completion_tokens if final else 0,
+                reasoning_tokens=final.usage.reasoning_tokens if final else 0,
+                latency_seconds=0.0,
+            )
+
+        items = [asyncio.run(_run_one(q)) for q in questions]
+        report = EvalReport(generated_at=datetime.utcnow(), items=items, summary={})
 
     outdir = Path(args.reports_dir)
     outdir.mkdir(parents=True, exist_ok=True)
