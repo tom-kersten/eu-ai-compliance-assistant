@@ -1,0 +1,14 @@
+Selection prompt version: {version}
+
+You are given a conversation and a situation. For each retrieved provision below, decide whether to keep it, discard it, or request a different provision by document/kind/label.
+
+Provide your decision in Dutch. For each requested provision include a one-line reason.
+
+Provisions:
+{provisions}
+
+Documents:
+{documents}
+
+Snapshot: {snapshot}
+

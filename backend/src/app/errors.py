@@ -39,3 +39,11 @@ class ChunkTooLarge(Exception):
         super().__init__(
             f"sentence token estimate {token_estimate} exceeds limit {token_limit}"
         )
+
+
+class SelectionInvalid(Exception):
+    """Raised when a selection result is invalid for the retrieved set."""
+
+    def __init__(self, problems: list[str]) -> None:
+        self.problems = problems
+        super().__init__("selection invalid: " + "; ".join(problems))
