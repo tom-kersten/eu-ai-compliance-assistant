@@ -47,3 +47,11 @@ class SelectionInvalid(Exception):
     def __init__(self, problems: list[str]) -> None:
         self.problems = problems
         super().__init__("selection invalid: " + "; ".join(problems))
+
+
+class AnswerInvalid(Exception):
+    """Raised when an answer result violates pipeline rules."""
+
+    def __init__(self, problems: list[str]) -> None:
+        self.problems = problems
+        super().__init__("answer invalid: " + "; ".join(problems))
