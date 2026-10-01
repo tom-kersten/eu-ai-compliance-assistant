@@ -38,6 +38,7 @@ class Settings(BaseSettings):
     embedding_api_key: str = ""
     embedding_model: str = "qwen/qwen3-embedding-8b"
     embedding_dimensions: Annotated[int, Field(gt=0)] = 2000
+    embedding_batch_size: Annotated[int, Field(gt=0)] = 100
     database_url: str = "postgresql://app:app@db:5432/compliance"
     retrieval_top_k: Annotated[int, Field(gt=0)] = 10
     similarity_threshold: EmptyAsNoneFloat = None

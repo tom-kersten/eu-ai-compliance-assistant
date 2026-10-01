@@ -444,6 +444,7 @@ All configuration is environment variables. `.env.example` holds the online defa
 | `EMBEDDING_API_KEY` | (secret) | |
 | `EMBEDDING_MODEL` | `qwen/qwen3-embedding-8b` | Offline: the name the vLLM server is started with. |
 | `EMBEDDING_DIMENSIONS` | `2000` | Must match the index. |
+| `EMBEDDING_BATCH_SIZE` | `100` | Practical batching size for provider requests. |
 | `DATABASE_URL` | internal `db` service | |
 | `RETRIEVAL_TOP_K` | `10` | |
 | `SIMILARITY_THRESHOLD` | to be tuned | |
