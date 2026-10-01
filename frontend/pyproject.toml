@@ -5,6 +5,7 @@ description = "EU AI compliance assistant UI"
 requires-python = ">=3.12"
 dependencies = [
     "streamlit>=1.64.0",
+    "httpx>=0.24.0",
 ]
 
 [dependency-groups]

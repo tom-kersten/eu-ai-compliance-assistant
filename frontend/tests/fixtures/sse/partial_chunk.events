@@ -1,0 +1,9 @@
+event: status
+data: {"step":"searching"}
+
+event: retrieved
+data: {"provisions":[{"ref":"art_4a","title":"Artikel 4a","similarity":0.92}]}
+
+event: final
+data: {"action":"answer","answer":"Deel1 Deel2","clarifying_questions":null,"citations":[],"situation":{},"usage":{}}
+

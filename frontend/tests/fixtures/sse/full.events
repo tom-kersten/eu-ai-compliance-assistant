@@ -1,0 +1,12 @@
+event: status
+data: {"step":"searching"}
+
+event: retrieved
+data: {"provisions":[{"ref":"art_4a","title":"Artikel 4a","similarity":0.92}]}
+
+event: selection
+data: {"kept":["art_4a"],"discarded":[],"added":[],"unavailable":[]}
+
+event: final
+data: {"action":"answer","answer":"Dit is een antwoord.","clarifying_questions":null,"citations":[{"ref":"art_4a","header":"Artikel 4a","body":"Volledige tekst"}],"situation":{"role":"beheerder"},"usage":{"calls":2},"corpus_snapshot":"2026-10-01"}
+
