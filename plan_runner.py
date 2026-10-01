@@ -254,8 +254,13 @@ def extract_questions(message: str) -> str | None:
     """Cursor signals it is blocked on questions with a line starting with QUESTIONS:.
     In practice the model often prepends a short narration sentence with no separator
     (e.g. "I'll check the repo first.QUESTIONS:\n1. ..."), so this matches QUESTIONS:
-    anywhere in the message rather than requiring it to be the very first token."""
-    m = re.search(r"QUESTIONS:\s*(.*)", message, re.S)
+    anywhere in the message rather than requiring it to be the very first token. It also
+    requires an actual numbered list item ("1." or "1)") right after the marker, because
+    the model sometimes just mentions the QUESTIONS: convention in prose (e.g. restating
+    the rule, or saying "no further QUESTIONS: ... proceed") without asking anything -
+    matching that too eagerly was observed to burn through MAX_QUESTION_ROUNDS on a false
+    positive and halt a task that had no real question."""
+    m = re.search(r"QUESTIONS:\s*(1[.)]\s.*)", message, re.S)
     return m.group(1).strip() if m else None
 
 
