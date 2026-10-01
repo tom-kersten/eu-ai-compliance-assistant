@@ -417,6 +417,27 @@ The API checks for client disconnection between steps and stops calling the LLM 
 
 Responses use `Cache-Control: no-cache`. There is no reverse proxy in v1, so no further buffering concerns.
 
+Health endpoint shape and documented error codes:
+- `/health` returns 200 with the minimal healthy body:
+
+  {"status":"ok"}
+
+  When unhealthy it returns HTTP 503 with a short machine-friendly shape:
+
+  {"status":"unhealthy","reason":"<code>","detail":"<short message>"}
+
+  The documented `reason` codes are:
+  - database_unreachable
+  - pending_migrations
+  - missing_index
+  - embedding_mismatch
+  - retrieval_failed
+  - llm_invalid_output
+  - selection_invalid
+  - answer_invalid
+  - provider_error
+  - internal_error
+
 ## 9. Frontend
 
 Streamlit, with no business logic beyond rendering and session state.

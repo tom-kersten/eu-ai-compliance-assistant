@@ -35,7 +35,7 @@ COPY --chown=app:app src ./src
 
 USER app
 EXPOSE 8000
-CMD ["uvicorn", "app.api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "--factory", "app.api.main:create_app", "--host", "0.0.0.0", "--port", "8000"]
 
 FROM base AS dev
 
@@ -48,4 +48,4 @@ COPY --chown=app:app tests ./tests
 
 USER app
 EXPOSE 8000
-CMD ["uvicorn", "app.api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "--factory", "app.api.main:create_app", "--host", "0.0.0.0", "--port", "8000"]

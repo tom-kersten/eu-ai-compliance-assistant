@@ -6,9 +6,9 @@ from fastapi.testclient import TestClient
 
 @pytest.mark.api
 def test_health_returns_ok() -> None:
-    from app.api.main import app
+    from app.api.main import create_app
 
-    client = TestClient(app)
+    client = TestClient(create_app())
     response = client.get("/health")
 
     assert response.status_code == 200
