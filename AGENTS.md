@@ -33,7 +33,7 @@ If a document is ambiguous, or the implementation needs to differ from it, stop 
 ## Non-negotiables
 
 1. **Test-driven.** Write the failing test first, see it fail, then write the code. No feature without tests.
-2. **Docker only.** Nothing may require a host Python environment. Use `make` targets.
+2. **Docker only.** Nothing may require a host Python environment. Use `make` targets (`make test`, `make lint`, ...) to run tests and checks. Never invoke `pytest`, `ruff`, or similar directly on the host: dev dependencies exist only inside the Docker images, so a direct host invocation will fail even when the code and the containerized tests are fine.
 3. **Configuration over code.** No hardcoded model names, URLs, thresholds, or dimensions. A new setting goes in `app/config.py`, in both `.env` example files, and in `docs/ARCHITECTURE.md` section 10.
 4. **Legal text is never invented or edited.** Corpus content comes only from `corpus/raw`, through the manifest. Normalization is limited to whitespace and amendment-marker stripping.
 5. **Do not assume provider behavior.** Parameter names and behavior for OpenRouter and vLLM (`dimensions`, reasoning effort, structured output together with reasoning, the Qwen query instruction) are unverified until recorded in `docs/PROVIDER_NOTES.md`.
