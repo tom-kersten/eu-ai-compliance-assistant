@@ -365,11 +365,12 @@ def execute_prompt(cfg, task: Task, approved: Path, summary: Path, partial: bool
     return f"""Implement Task {task.id} from {cfg.plan_rel}.
 The approved build plan is {rel(cfg, approved)}: follow it. Also read AGENTS.md, the "How to use this plan" section (including the rules for every task) and the "Read first" documents of the task. {deps_hint(cfg, task)} {clar_hint(cfg, task)}{resume}
 - Implement test-first in small steps; every step ends green (make test, make lint).
+- Before writing your summary, you MUST actually run `make lint` and `make test` yourself, in this shell, and wait for them to finish. They work in this environment. Do not guess, assume, or state that they cannot be run or that a dependency (docker, pytest, ...) is unavailable without first actually trying the command and showing the real error. A separate, independent check re-runs them after you anyway, so a false claim here only wastes a round; an honest failure is fine.
 - Stay inside Task {task.id}'s scope. Nobody can answer you interactively (see the QUESTIONS rule below). If the plan and the documents conflict, follow the documents and record the deviation in your summary.
 - {QUESTION_RULE}
 - Do NOT commit, push, or touch anything under {WORKDIR}/ (other than the summary file below).
 - If you cannot complete the task without violating the documents, stop and make the first word of the summary BLOCKED, followed by the reason.
-- When finished, write your report to {rel(cfg, summary)}. It becomes the git commit message body, so write plain text (no markdown headings, lines under 100 characters) with these labeled parts: "Changes:" (a short bullet list of what was added or changed, by file or module), "Tests:" (what you ran and the results), "Deviations:" (from the documents, or "none"), "Next task:" (what the next task needs to know)."""
+- When finished, write your report to {rel(cfg, summary)}. It becomes the git commit message body, so write plain text (no markdown headings, lines under 100 characters) with these labeled parts: "Changes:" (a short bullet list of what was added or changed, by file or module), "Tests:" (the exact commands you ran and their real pass/fail output, not a guess), "Deviations:" (from the documents, or "none"), "Next task:" (what the next task needs to know)."""
 
 
 def fix_prompt(cfg, task: Task, cmd: str, log_file: Path, approved: Path) -> str:
