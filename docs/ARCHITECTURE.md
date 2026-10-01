@@ -412,7 +412,7 @@ The API checks for client disconnection between steps and stops calling the LLM 
 | `status` | `step`: `searching`, `selecting`, or `answering`. |
 | `retrieved` | Provisions found by vector search: `ref`, title, similarity. |
 | `selection` | `kept`, `discarded`, `added`, and `unavailable` (referenced but not in the corpus). |
-| `final` | `action` (`answer`, `clarify`, `cannot_answer`), answer text or clarifying questions, `citations` with the provision text for display, updated `situation`, `usage` (calls and tokens), `corpus_snapshot`. |
+| `final` | `action` (`answer`, `clarify`, `cannot_answer`), answer text or clarifying questions, `citations` with the provision text for display, updated `situation`, `usage` (calls, tokens, prompt_versions), `corpus_snapshot`. |
 | `error` | Error `code` and a short message. The UI maps codes to Dutch text. |
 
 Responses use `Cache-Control: no-cache`. There is no reverse proxy in v1, so no further buffering concerns.

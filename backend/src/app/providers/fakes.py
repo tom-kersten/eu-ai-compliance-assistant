@@ -63,7 +63,11 @@ class ScriptedLLM(LLM):
         if not self._queue:
             raise RuntimeError("ScriptedLLM queue is empty")
         result = self._queue.popleft()
-        # Optionally validate shape using provided schema
+        # Allow tests to attach a `usage` key to the queued response.
+        # If a schema is provided, validate only the payload without `usage`,
+        # since the structured-output schemas forbid extras.
         if schema is not None:
-            schema.parse_obj(result)
+            payload = dict(result)
+            payload.pop("usage", None)
+            schema.parse_obj(payload)
         return result

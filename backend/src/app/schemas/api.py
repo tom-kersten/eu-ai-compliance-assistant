@@ -40,6 +40,7 @@ class Usage(BaseModel):
     prompt_tokens: int
     completion_tokens: int
     reasoning_tokens: int = 0
+    prompt_versions: dict[str, str] = Field(default_factory=dict)
 
 
 class DisplayCitation(BaseModel):
