@@ -1,59 +1,51 @@
 {
   "data": [
     {
-      "id": "openai/gpt-6.1-sol-pro",
-      "canonical_slug": "openai/gpt-6.1-sol-pro-20260929",
+      "id": "stepfun/step-5-preview",
+      "canonical_slug": "stepfun/step-5-preview-20261008",
       "hugging_face_id": null,
-      "name": "OpenAI: GPT-6.1 Sol Pro",
-      "created": 1790702886,
-      "description": "GPT-6.1 Sol Pro is the same underlying model as [GPT-6.1 Sol](https://openrouter.ai/openai/gpt-6.1-sol), served with `reasoning.mode` set to `pro` for higher-quality responses on complex tasks. **Cost note:** pro mode spends far more...",
-      "context_length": 1050000,
+      "name": "StepFun: Step 5 Preview",
+      "created": 1791462849,
+      "description": "Step 5 Preview is StepFun's flagship model for agentic work, built on a sparse Mixture-of-Experts architecture (27B active / 600B total parameters). It performs strongly in software engineering and professional...",
+      "context_length": 1000000,
       "architecture": {
-        "modality": "text+image+file->text",
+        "modality": "text+image+video->text",
         "input_modalities": [
-          "file",
+          "text",
           "image",
-          "text"
+          "video"
         ],
         "output_modalities": [
           "text"
         ],
-        "tokenizer": "GPT",
+        "tokenizer": "Other",
         "instruct_type": null
       },
       "pricing": {
-        "prompt": "0.000002",
-        "completion": "0.00001",
-        "web_search": "0.01",
-        "input_cache_read": "0.0000001",
-        "input_cache_write": "0.0000025",
-        "overrides": [
-          {
-            "min_prompt_tokens": 272000,
-            "prompt": "0.000004",
-            "completion": "0.000015",
-            "input_cache_read": "0.0000002",
-            "input_cache_write": "0.000005"
-          }
-        ]
+        "prompt": "0.000001",
+        "completion": "0.0000027",
+        "input_cache_read": "0.00000005"
       },
       "top_provider": {
-        "context_length": 1050000,
-        "max_completion_tokens": 128000,
-        "is_moderated": true
+        "context_length": 1000000,
+        "max_completion_tokens": 64000,
+        "is_moderated": false
       },
       "per_request_limits": null,
       "supported_parameters": [
+        "frequency_penalty",
         "include_reasoning",
-        "max_completion_tokens",
+        "logprobs",
         "max_tokens",
         "reasoning",
         "reasoning_effort",
         "response_format",
-        "seed",
+        "stop",
         "structured_outputs",
-        "tool_choice",
-        "tools"
+        "temperature",
+        "tools",
+        "top_logprobs",
+        "top_p"
       ],
       "default_parameters": {
         "temperature": null,
@@ -67,14 +59,11 @@
       "knowledge_cutoff": null,
       "expiration_date": null,
       "links": {
-        "details": "/api/v1/models/openai/gpt-6.1-sol-pro-20260929/endpoints"
+        "details": "/api/v1/models/stepfun/step-5-preview-20261008/endpoints"
       },
       "reasoning": {
         "mandatory": true,
-        "default_enabled": true,
         "supported_efforts": [
-          "max",
-          "xhigh",
           "high",
           "medium",
           "low"
@@ -83,258 +72,12 @@
       }
     },
     {
-      "id": "openai/gpt-6.1-sol-pro:batch",
-      "canonical_slug": "openai/gpt-6.1-sol-pro-20260929",
+      "id": "anthropic/claude-haiku-5.5",
+      "canonical_slug": "anthropic/claude-haiku-5.5-20261007",
       "hugging_face_id": null,
-      "name": "OpenAI: GPT-6.1 Sol Pro (batch)",
-      "created": 1790702886,
-      "description": "GPT-6.1 Sol Pro is the same underlying model as [GPT-6.1 Sol](https://openrouter.ai/openai/gpt-6.1-sol), served with `reasoning.mode` set to `pro` for higher-quality responses on complex tasks. **Cost note:** pro mode spends far more...",
-      "context_length": 1050000,
-      "architecture": {
-        "modality": "text+image+file->text",
-        "input_modalities": [
-          "file",
-          "image",
-          "text"
-        ],
-        "output_modalities": [
-          "text"
-        ],
-        "tokenizer": "GPT",
-        "instruct_type": null
-      },
-      "pricing": {
-        "prompt": "0.000001",
-        "completion": "0.000005",
-        "web_search": "0.01",
-        "input_cache_read": "0.00000005",
-        "input_cache_write": "0.00000125",
-        "overrides": [
-          {
-            "min_prompt_tokens": 272000,
-            "prompt": "0.000002",
-            "completion": "0.0000075",
-            "input_cache_read": "0.0000001",
-            "input_cache_write": "0.0000025"
-          }
-        ]
-      },
-      "top_provider": {
-        "context_length": 1050000,
-        "max_completion_tokens": 128000,
-        "is_moderated": true
-      },
-      "per_request_limits": null,
-      "supported_parameters": [
-        "include_reasoning",
-        "max_tokens",
-        "reasoning",
-        "reasoning_effort",
-        "response_format",
-        "seed",
-        "structured_outputs",
-        "tool_choice",
-        "tools"
-      ],
-      "default_parameters": {
-        "temperature": null,
-        "top_p": null,
-        "top_k": null,
-        "frequency_penalty": null,
-        "presence_penalty": null,
-        "repetition_penalty": null
-      },
-      "supported_voices": null,
-      "knowledge_cutoff": null,
-      "expiration_date": null,
-      "links": {
-        "details": "/api/v1/models/openai/gpt-6.1-sol-pro-20260929/endpoints"
-      },
-      "reasoning": {
-        "mandatory": true,
-        "default_enabled": true,
-        "supported_efforts": [
-          "max",
-          "xhigh",
-          "high",
-          "medium",
-          "low"
-        ],
-        "default_effort": "medium"
-      }
-    },
-    {
-      "id": "openai/gpt-6.1-sol",
-      "canonical_slug": "openai/gpt-6.1-sol-20260929",
-      "hugging_face_id": null,
-      "name": "OpenAI: GPT-6.1 Sol",
-      "created": 1790702882,
-      "description": "GPT-6.1 Sol is an upgrade to GPT-6 Sol from OpenAI, positioned below the flagship GPT-6 Astra in the GPT-6 series. It is suited for agentic coding, computer use, document-heavy professional...",
-      "context_length": 1050000,
-      "architecture": {
-        "modality": "text+image+file->text",
-        "input_modalities": [
-          "file",
-          "image",
-          "text"
-        ],
-        "output_modalities": [
-          "text"
-        ],
-        "tokenizer": "GPT",
-        "instruct_type": null
-      },
-      "pricing": {
-        "prompt": "0.000002",
-        "completion": "0.00001",
-        "web_search": "0.01",
-        "input_cache_read": "0.0000001",
-        "input_cache_write": "0.0000025",
-        "overrides": [
-          {
-            "min_prompt_tokens": 272000,
-            "prompt": "0.000004",
-            "completion": "0.000015",
-            "input_cache_read": "0.0000002",
-            "input_cache_write": "0.000005"
-          }
-        ]
-      },
-      "top_provider": {
-        "context_length": 1050000,
-        "max_completion_tokens": 128000,
-        "is_moderated": true
-      },
-      "per_request_limits": null,
-      "supported_parameters": [
-        "include_reasoning",
-        "max_completion_tokens",
-        "max_tokens",
-        "reasoning",
-        "reasoning_effort",
-        "response_format",
-        "seed",
-        "structured_outputs",
-        "tool_choice",
-        "tools"
-      ],
-      "default_parameters": {},
-      "supported_voices": null,
-      "knowledge_cutoff": null,
-      "expiration_date": null,
-      "links": {
-        "details": "/api/v1/models/openai/gpt-6.1-sol-20260929/endpoints"
-      },
-      "benchmarks": {
-        "design_arena": [],
-        "artificial_analysis": {
-          "intelligence_index": 51.8,
-          "coding_index": null,
-          "agentic_index": null
-        }
-      },
-      "reasoning": {
-        "mandatory": true,
-        "default_enabled": true,
-        "supported_efforts": [
-          "max",
-          "xhigh",
-          "high",
-          "medium",
-          "low"
-        ],
-        "default_effort": "medium"
-      }
-    },
-    {
-      "id": "openai/gpt-6.1-sol:batch",
-      "canonical_slug": "openai/gpt-6.1-sol-20260929",
-      "hugging_face_id": null,
-      "name": "OpenAI: GPT-6.1 Sol (batch)",
-      "created": 1790702882,
-      "description": "GPT-6.1 Sol is an upgrade to GPT-6 Sol from OpenAI, positioned below the flagship GPT-6 Astra in the GPT-6 series. It is suited for agentic coding, computer use, document-heavy professional...",
-      "context_length": 1050000,
-      "architecture": {
-        "modality": "text+image+file->text",
-        "input_modalities": [
-          "file",
-          "image",
-          "text"
-        ],
-        "output_modalities": [
-          "text"
-        ],
-        "tokenizer": "GPT",
-        "instruct_type": null
-      },
-      "pricing": {
-        "prompt": "0.000001",
-        "completion": "0.000005",
-        "web_search": "0.01",
-        "input_cache_read": "0.00000005",
-        "input_cache_write": "0.00000125",
-        "overrides": [
-          {
-            "min_prompt_tokens": 272000,
-            "prompt": "0.000002",
-            "completion": "0.0000075",
-            "input_cache_read": "0.0000001",
-            "input_cache_write": "0.0000025"
-          }
-        ]
-      },
-      "top_provider": {
-        "context_length": 1050000,
-        "max_completion_tokens": 128000,
-        "is_moderated": true
-      },
-      "per_request_limits": null,
-      "supported_parameters": [
-        "include_reasoning",
-        "max_tokens",
-        "reasoning",
-        "reasoning_effort",
-        "response_format",
-        "seed",
-        "structured_outputs",
-        "tool_choice",
-        "tools"
-      ],
-      "default_parameters": {},
-      "supported_voices": null,
-      "knowledge_cutoff": null,
-      "expiration_date": null,
-      "links": {
-        "details": "/api/v1/models/openai/gpt-6.1-sol-20260929/endpoints"
-      },
-      "benchmarks": {
-        "design_arena": [],
-        "artificial_analysis": {
-          "intelligence_index": 51.8,
-          "coding_index": null,
-          "agentic_index": null
-        }
-      },
-      "reasoning": {
-        "mandatory": true,
-        "default_enabled": true,
-        "supported_efforts": [
-          "max",
-          "xhigh",
-          "high",
-          "medium",
-          "low"
-        ],
-        "default_effort": "medium"
-      }
-    },
-    {
-      "id": "anthropic/claude-sonnet-5.5",
-      "canonical_slug": "anthropic/claude-sonnet-5.5-20260928",
-      "hugging_face_id": null,
-      "name": "Anthropic: Claude Sonnet 5.5",
-      "created": 1790618686,
-      "description": "Claude Sonnet 5.5 is Anthropic's Sonnet-class model for well-scoped everyday work, succeeding Claude Sonnet 5 as a direct upgrade. It is especially strong at building features, fixing bugs, and producing...",
+      "name": "Anthropic: Claude Haiku 5.5",
+      "created": 1791397883,
+      "description": "Claude Haiku 5.5 is Anthropic's small, fast model for high-volume, cost-sensitive work such as summarization, subagents, and browser use. It succeeds Claude Haiku 4.5 with stronger coding, computer use, and...",
       "context_length": 1000000,
       "architecture": {
         "modality": "text+image+file->text",
@@ -350,12 +93,22 @@
         "instruct_type": null
       },
       "pricing": {
-        "prompt": "0.000002",
-        "completion": "0.00001",
+        "prompt": "0.0000001",
+        "completion": "0.0000005",
         "web_search": "0.01",
-        "input_cache_read": "0.0000002",
-        "input_cache_write": "0.0000025",
-        "input_cache_write_1h": "0.000004"
+        "input_cache_read": "0.00000001",
+        "input_cache_write": "0.000000125",
+        "input_cache_write_1h": "0.0000002",
+        "overrides": [
+          {
+            "min_prompt_tokens": 100000,
+            "prompt": "0.0000005",
+            "completion": "0.0000025",
+            "input_cache_read": "0.00000005",
+            "input_cache_write": "0.000000625",
+            "input_cache_write_1h": "0.000001"
+          }
+        ]
       },
       "top_provider": {
         "context_length": 1000000,
@@ -372,7 +125,6 @@
         "response_format",
         "stop",
         "structured_outputs",
-        "temperature",
         "tool_choice",
         "tools",
         "verbosity"
@@ -382,24 +134,283 @@
       "knowledge_cutoff": null,
       "expiration_date": null,
       "links": {
-        "details": "/api/v1/models/anthropic/claude-sonnet-5.5-20260928/endpoints"
+        "details": "/api/v1/models/anthropic/claude-haiku-5.5-20261007/endpoints"
       },
       "benchmarks": {
         "design_arena": [],
         "artificial_analysis": {
-          "intelligence_index": 56,
+          "intelligence_index": 43.4,
           "coding_index": null,
           "agentic_index": null
         }
       },
       "reasoning": {
-        "mandatory": true,
+        "mandatory": false,
         "supported_efforts": [
           "max",
           "xhigh",
           "high",
           "medium",
           "low"
+        ],
+        "default_effort": "medium"
+      }
+    },
+    {
+      "id": "anthropic/claude-haiku-5.5:batch",
+      "canonical_slug": "anthropic/claude-haiku-5.5-20261007",
+      "hugging_face_id": null,
+      "name": "Anthropic: Claude Haiku 5.5 (batch)",
+      "created": 1791397883,
+      "description": "Claude Haiku 5.5 is Anthropic's small, fast model for high-volume, cost-sensitive work such as summarization, subagents, and browser use. It succeeds Claude Haiku 4.5 with stronger coding, computer use, and...",
+      "context_length": 1000000,
+      "architecture": {
+        "modality": "text+image+file->text",
+        "input_modalities": [
+          "text",
+          "image",
+          "file"
+        ],
+        "output_modalities": [
+          "text"
+        ],
+        "tokenizer": "Claude",
+        "instruct_type": null
+      },
+      "pricing": {
+        "prompt": "0.00000005",
+        "completion": "0.00000025",
+        "web_search": "0.01",
+        "input_cache_read": "0.000000005",
+        "input_cache_write": "0.0000000625",
+        "input_cache_write_1h": "0.0000001",
+        "overrides": [
+          {
+            "min_prompt_tokens": 100000,
+            "prompt": "0.00000025",
+            "completion": "0.00000125",
+            "input_cache_read": "0.000000025",
+            "input_cache_write": "0.0000003125",
+            "input_cache_write_1h": "0.0000005"
+          }
+        ]
+      },
+      "top_provider": {
+        "context_length": 1000000,
+        "max_completion_tokens": 128000,
+        "is_moderated": true
+      },
+      "per_request_limits": null,
+      "supported_parameters": [
+        "include_reasoning",
+        "max_tokens",
+        "reasoning",
+        "reasoning_effort",
+        "response_format",
+        "stop",
+        "structured_outputs",
+        "tool_choice",
+        "tools",
+        "verbosity"
+      ],
+      "default_parameters": {},
+      "supported_voices": null,
+      "knowledge_cutoff": null,
+      "expiration_date": null,
+      "links": {
+        "details": "/api/v1/models/anthropic/claude-haiku-5.5-20261007/endpoints"
+      },
+      "benchmarks": {
+        "design_arena": [],
+        "artificial_analysis": {
+          "intelligence_index": 43.4,
+          "coding_index": null,
+          "agentic_index": null
+        }
+      },
+      "reasoning": {
+        "mandatory": false,
+        "supported_efforts": [
+          "max",
+          "xhigh",
+          "high",
+          "medium",
+          "low"
+        ],
+        "default_effort": "medium"
+      }
+    },
+    {
+      "id": "google/gemini-nano-banana-2.1",
+      "canonical_slug": "google/gemini-nano-banana-2.1-20261006",
+      "hugging_face_id": null,
+      "name": "Google: Nano Banana 2.1",
+      "created": 1791300825,
+      "description": "Nano Banana 2.1 (Gemini Nano Banana 2.1) is Google's image generation and editing model on the Flash tier, succeeding Nano Banana 2 and Nano Banana Pro. It improves product recontextualization,...",
+      "context_length": 65536,
+      "architecture": {
+        "modality": "text+image->text+image",
+        "input_modalities": [
+          "image",
+          "text"
+        ],
+        "output_modalities": [
+          "image",
+          "text"
+        ],
+        "tokenizer": "Gemini",
+        "instruct_type": null
+      },
+      "pricing": {
+        "prompt": "0.0000015",
+        "completion": "0.0000075",
+        "image_output": "0.00003",
+        "web_search": "0.014"
+      },
+      "top_provider": {
+        "context_length": 65536,
+        "max_completion_tokens": 58982,
+        "is_moderated": false
+      },
+      "per_request_limits": null,
+      "supported_parameters": [
+        "include_reasoning",
+        "max_tokens",
+        "reasoning",
+        "reasoning_effort",
+        "response_format",
+        "seed",
+        "structured_outputs",
+        "temperature",
+        "tool_choice",
+        "tools",
+        "top_p"
+      ],
+      "default_parameters": {},
+      "supported_voices": null,
+      "knowledge_cutoff": null,
+      "expiration_date": null,
+      "links": {
+        "details": "/api/v1/models/google/gemini-nano-banana-2.1-20261006/endpoints"
+      },
+      "reasoning": {
+        "mandatory": false,
+        "default_enabled": true,
+        "supported_efforts": [
+          "high",
+          "minimal"
+        ],
+        "default_effort": "minimal"
+      }
+    },
+    {
+      "id": "mistralai/mistral-large-4-0",
+      "canonical_slug": "mistralai/mistral-large-4-0-20261006",
+      "hugging_face_id": null,
+      "name": "Mistral: Mistral Large 4",
+      "created": 1791294122,
+      "description": "Mistral Large 4 is a frontier multimodal (text and image input) model from Mistral AI built for reasoning, coding, and agentic workloads. It offers a 1M-token context window with up...",
+      "context_length": 1048576,
+      "architecture": {
+        "modality": "text+image->text",
+        "input_modalities": [
+          "text",
+          "image"
+        ],
+        "output_modalities": [
+          "text"
+        ],
+        "tokenizer": "Mistral",
+        "instruct_type": null
+      },
+      "pricing": {
+        "prompt": "0.00000068",
+        "completion": "0.00000209",
+        "input_cache_read": "0.00000007"
+      },
+      "top_provider": {
+        "context_length": 1048576,
+        "max_completion_tokens": 262144,
+        "is_moderated": false
+      },
+      "per_request_limits": null,
+      "supported_parameters": [
+        "frequency_penalty",
+        "include_reasoning",
+        "logprobs",
+        "max_tokens",
+        "presence_penalty",
+        "reasoning",
+        "reasoning_effort",
+        "response_format",
+        "seed",
+        "stop",
+        "structured_outputs",
+        "temperature",
+        "tool_choice",
+        "tools",
+        "top_logprobs",
+        "top_p"
+      ],
+      "default_parameters": {},
+      "supported_voices": null,
+      "knowledge_cutoff": null,
+      "expiration_date": null,
+      "links": {
+        "details": "/api/v1/models/mistralai/mistral-large-4-0-20261006/endpoints"
+      },
+      "benchmarks": {
+        "design_arena": [
+          {
+            "arena": "models",
+            "category": "dataviz",
+            "elo": 1333,
+            "win_rate": 59.6,
+            "rank": 10
+          },
+          {
+            "arena": "models",
+            "category": "gamedev",
+            "elo": 1261,
+            "win_rate": 45.8,
+            "rank": 31
+          },
+          {
+            "arena": "models",
+            "category": "website",
+            "elo": 1276,
+            "win_rate": 48.9,
+            "rank": 25
+          },
+          {
+            "arena": "models",
+            "category": "3d",
+            "elo": 1265,
+            "win_rate": 46.4,
+            "rank": 24
+          },
+          {
+            "arena": "models",
+            "category": "codecategories",
+            "elo": 1271,
+            "win_rate": 47.8,
+            "rank": 26
+          },
+          {
+            "arena": "models",
+            "category": "uicomponent",
+            "elo": 1263,
+            "win_rate": 46,
+            "rank": 31
+          }
+        ]
+      },
+      "reasoning": {
+        "mandatory": false,
+        "default_enabled": true,
+        "supported_efforts": [
+          "high",
+          "none"
         ],
         "default_effort": "high"
       }

@@ -1,7 +1,7 @@
 {
-  "id": "gen-1790802116-1m39xQVseAeN7Cagqy1w",
+  "id": "gen-1791501869-Rmapv5PiPfmgKupIf4Mo",
   "object": "chat.completion",
-  "created": 1790802116,
+  "created": 1791501869,
   "model": "qwen/qwen3.8-27b",
   "provider": "Phala",
   "system_fingerprint": null,
@@ -14,13 +14,13 @@
       "native_finish_reason": "stop",
       "message": {
         "role": "assistant",
-        "content": "{\"keep\":[\"AI-verordening:art_3\"],\"discard\":[\"AI-verordening:art_50\"],\"request\":[],\"external_references\":[]}",
+        "content": "{\n  \"keep\": [\n    \"AI-verordening:art_3\"\n  ],\n  \"discard\": [\n    \"AI-verordening:art_50\"\n  ],\n  \"request\": [],\n  \"external_references\": []\n}",
         "refusal": null,
-        "reasoning": "The user is asking me to return JSON that matches a schema. They've specified:\n- keep: ['AI-verordening:art_3']\n- discard: ['AI-verordening:art_50']\n- request: []\n- external_references: []\n\nThey want me to return JSON only. Let me construct the JSON response with these fields.\n```json\n{\n  \"keep\": [\"AI-verordening:art_3\"],\n  \"discard\": [\"AI-verordening:art_50\"],\n  \"request\": [],\n  \"external_references\": []\n}\n```\n\nThis looks straightforward. The user wants a JSON object with those four keys and their respective values. Let me verify this matches what was requested - yes, keep, discard, request, and external_references are all present with the correct values.\n",
+        "reasoning": "We need answer user's request. User: \"Return JSON only. keep=['AI-verordening:art_3'], discard=['AI-verordening:art_50'], request=[], external_references=[].\"\nWe need output JSON only matching schema exactly. But schema not provided? Need infer likely simple object with keys keep, discard, request, external_references. They ask return JSON only and gave arrays. We should output those exactly. Need maybe no markdown. Need JSON valid. Could be {\"keep\":[\"AI-verordening:art_3\"],\"discard\":[\"AI-verordening:art_50\"],\"request\":[],\"external_references\":[]}. Need ensure only JSON. Final only JSON.\n",
         "reasoning_details": [
           {
             "type": "reasoning.text",
-            "text": "The user is asking me to return JSON that matches a schema. They've specified:\n- keep: ['AI-verordening:art_3']\n- discard: ['AI-verordening:art_50']\n- request: []\n- external_references: []\n\nThey want me to return JSON only. Let me construct the JSON response with these fields.\n```json\n{\n  \"keep\": [\"AI-verordening:art_3\"],\n  \"discard\": [\"AI-verordening:art_50\"],\n  \"request\": [],\n  \"external_references\": []\n}\n```\n\nThis looks straightforward. The user wants a JSON object with those four keys and their respective values. Let me verify this matches what was requested - yes, keep, discard, request, and external_references are all present with the correct values.\n",
+            "text": "We need answer user's request. User: \"Return JSON only. keep=['AI-verordening:art_3'], discard=['AI-verordening:art_50'], request=[], external_references=[].\"\nWe need output JSON only matching schema exactly. But schema not provided? Need infer likely simple object with keys keep, discard, request, external_references. They ask return JSON only and gave arrays. We should output those exactly. Need maybe no markdown. Need JSON valid. Could be {\"keep\":[\"AI-verordening:art_3\"],\"discard\":[\"AI-verordening:art_50\"],\"request\":[],\"external_references\":[]}. Need ensure only JSON. Final only JSON.\n",
             "format": "unknown",
             "index": 0
           }
@@ -30,9 +30,9 @@
   ],
   "usage": {
     "prompt_tokens": 93,
-    "completion_tokens": 211,
-    "total_tokens": 304,
-    "cost": 0.000409575,
+    "completion_tokens": 203,
+    "total_tokens": 296,
+    "cost": 0.000394575,
     "is_byok": false,
     "prompt_tokens_details": {
       "cached_tokens": 0,
@@ -41,12 +41,12 @@
       "video_tokens": 0
     },
     "cost_details": {
-      "upstream_inference_cost": 0.000409575,
+      "upstream_inference_cost": 0.000394575,
       "upstream_inference_prompt_cost": 1.395e-05,
-      "upstream_inference_completions_cost": 0.000395625
+      "upstream_inference_completions_cost": 0.000380625
     },
     "completion_tokens_details": {
-      "reasoning_tokens": 179,
+      "reasoning_tokens": 143,
       "image_tokens": 0,
       "audio_tokens": 0
     }

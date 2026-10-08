@@ -411,7 +411,7 @@ class ProviderVerifier:
             key=self.embedding_key,
             json_body={
                 "model": self.embedding_model,
-                "input": text,
+                "input": [text],
                 "dimensions": self.dimensions,
             },
         )
@@ -419,7 +419,7 @@ class ProviderVerifier:
             "POST",
             f"{self.embedding_base}/embeddings",
             key=self.embedding_key,
-            json_body={"model": self.embedding_model, "input": text},
+            json_body={"model": self.embedding_model, "input": [text]},
         )
 
         vec_with: list[float] | None = None
@@ -793,6 +793,14 @@ class ProviderVerifier:
         usage: dict[str, Any],
     ) -> list[str]:
         decisions: list[str] = []
+        decisions.append(
+            "Embeddings request shape: `dimensions` is a top-level field on the "
+            "request body, never nested under a `parameters` object. `input` "
+            "must always be a JSON array, even for a single text - a bare "
+            "string is rejected with HTTP 400 (OpenRouter error code 20015). "
+            "Both were real bugs found after T8/verification shipped with the "
+            "wrong shapes; code against this confirmed shape, not an assumed one."
+        )
         if dimensions.get("honored"):
             decisions.append(
                 f"Send dimensions={self.dimensions} on every embeddings request "

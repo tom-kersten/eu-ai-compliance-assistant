@@ -15,7 +15,7 @@ HTTP call cap for the verification script: `MAX_HTTP_CALLS = 60` (this run used 
 - returned_without_param: 4096
 - normalized_with_param: True
 - normalized_without_param: True
-- cosine_vs_truncated_native: 0.999932
+- cosine_vs_truncated_native: 0.997546
 - honored: True
 - fallback: None
 - status_with_param: 200
@@ -29,34 +29,34 @@ dimensions parameter was **honored**. Send `dimensions` from configuration and v
 - recommended_task: Given a web search query, retrieve relevant passages that answer the query
 - recommended_variant: web_search
 - mean_margins:
-  - bare: 0.170391
-  - web_search: 0.179377
-  - legal: 0.112517
+  - bare: 0.172738
+  - web_search: 0.180065
+  - legal: 0.117958
 - comparison:
   - bare_provider:
-    - match_cosine: 0.685707
-    - distractor_cosine: 0.527933
-    - margin: 0.157774
+    - match_cosine: 0.680859
+    - distractor_cosine: 0.521255
+    - margin: 0.159604
   - bare_recruitment:
-    - match_cosine: 0.680467
-    - distractor_cosine: 0.497459
-    - margin: 0.183008
+    - match_cosine: 0.675101
+    - distractor_cosine: 0.489229
+    - margin: 0.185872
   - web_search_provider:
-    - match_cosine: 0.755718
-    - distractor_cosine: 0.601712
-    - margin: 0.154006
+    - match_cosine: 0.755799
+    - distractor_cosine: 0.601806
+    - margin: 0.153993
   - web_search_recruitment:
-    - match_cosine: 0.702008
-    - distractor_cosine: 0.497259
-    - margin: 0.204749
+    - match_cosine: 0.703365
+    - distractor_cosine: 0.497228
+    - margin: 0.206137
   - legal_provider:
-    - match_cosine: 0.741696
-    - distractor_cosine: 0.610358
-    - margin: 0.131337
+    - match_cosine: 0.741169
+    - distractor_cosine: 0.604158
+    - margin: 0.137011
   - legal_recruitment:
-    - match_cosine: 0.671229
-    - distractor_cosine: 0.577532
-    - margin: 0.093697
+    - match_cosine: 0.677434
+    - distractor_cosine: 0.578529
+    - margin: 0.098906
 
 ## 3. Limits
 
@@ -69,10 +69,10 @@ dimensions parameter was **honored**. Send `dimensions` from configuration and v
   (none)
 - practical_batch_size: 100
 - latency_ms:
-  - 1: 242.8
-  - 8: 447.0
-  - 32: 1121.6
-  - 100: 1666.0
+  - 1: 330.8
+  - 8: 485.3
+  - 32: 885.9
+  - 100: 3424.0
 
 ## 4. Structured output
 
@@ -82,8 +82,6 @@ dimensions parameter was **honored**. Send `dimensions` from configuration and v
 - answer_attempts: 10
 - response_format: json_schema
 - providers_seen:
-  - Darkbloom
-  - Ionstream
   - Phala
   - Wafer
 
@@ -121,6 +119,7 @@ T8 must parse only `message.content`. Do not store or return reasoning text.
 - llm_providers:
   - AkashML
   - Alibaba
+  - Cerebras
   - Chutes
   - Cloudflare
   - CoreWeave
@@ -129,6 +128,7 @@ T8 must parse only `message.content`. Do not store or return reasoning text.
   - DekaLLM
   - Ionstream
   - Mancer 2
+  - ModelRun
   - Novita
   - Parasail
   - Phala
@@ -140,6 +140,7 @@ T8 must parse only `message.content`. Do not store or return reasoning text.
 
 ## Decisions for T8
 
+- Embeddings request shape: `dimensions` is a top-level field on the request body, never nested under a `parameters` object. `input` must always be a JSON array, even for a single text - a bare string is rejected with HTTP 400 (OpenRouter error code 20015). Both were real bugs found after T8/verification shipped with the wrong shapes; code against this confirmed shape, not an assumed one.
 - Send dimensions=2000 on every embeddings request and raise if the returned length differs.
 - embed_query must prefix with `Instruct: Given a web search query, retrieve relevant passages that answer the query\nQuery:` + the user query. embed_documents must send the raw text.
 - Use embedding batch size 100 (largest successful probe; failed=[]).
