@@ -194,5 +194,7 @@ pyrightconfig.json
 .ionide
 eval/reports/*
 !eval/reports/.gitkeep
+backend/src/eval/reports/*
+!backend/src/eval/reports/.gitkeep
 
 # End of https://www.toptal.com/developers/gitignore/api/visualstudiocode,python

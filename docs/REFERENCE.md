@@ -184,9 +184,8 @@ Unit and API tests run against fake LLM and embedding providers, so they are det
 
 ## 14. Open decisions
 
-- **Similarity threshold value**, and whether 10 remains a sensible ceiling. To be tuned on the eval set.
-- **Cap on additional provisions** added by the selection step per question.
-- **Structured-output reliability** of the LLM, based on the test in section 12, and the resulting retry and validation strategy for both calls.
+Measured values for the similarity threshold (`0.5959`), the top-10 ceiling, the added-provision cap (`1`), selection reasoning (`low`), and the structured-output retry budget are recorded in `docs/EVAL_RESULTS.md`.
+
 - **Quantization documentation and defaults**, including the default prompt budget for the offline profile: deferred to the end of the project.
 
 ## 15. Extension points (designed for, not built)

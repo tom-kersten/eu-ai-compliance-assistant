@@ -134,7 +134,7 @@ CREATE TABLE index_meta (
 - **Reference scheme.** `ref = {doc}:{anchor}`, using the EUR-Lex anchor as it appears in the HTML (`art_6`, `art_4a`, `anx_III`, `rct_40`). Lettered articles (`4a`, `75b`) are therefore ordinary refs.
 - **Split provisions.** A part has its own row and the suffix `#n`. Looking up a parent ref returns all its parts in order.
 - **Similarity** is cosine: `1 - (embedding <=> query)`. The threshold is applied to that value.
-- **Embeddings are created from `header + "\n" + body`.** The same text is shown to the LLM.
+- **Embeddings are created from the header and body with the status line removed.** The stored header, including the status line, is what is shown to the LLM and the user. See `docs/EVAL_RESULTS.md`.
 
 ### Chunk header and body format
 
@@ -155,7 +155,7 @@ Every chunk starts with a header that gives its full lineage, from the document 
 - **Titles keep the source capitalization.** Chapter titles in the AI Act and the CRA are uppercase. Sentence-casing is possible later, but acronyms such as `AI` need care.
 - **The part range** uses `lid` and `leden` for articles, `punt` and `punten` for annexes: `Deel 2 van 3: leden 3 tot en met 5`, or `Deel 3 van 3: lid 6`. If an annex is split under an internal heading (for example `Deel II` in CRA Annex I), that heading is added to the part line.
 - **The ref is not part of the header.** It is stored separately and added by the prompt formatter (see `PROMPT_SPEC.md`).
-- **Embedded text** is `header + "\n\n" + body`. The status line is included in the embedded text, which is a provisional choice to be checked with the eval set.
+- **Stored text** is `header + "\n\n" + body`, status line included. **Embedding input** drops lines that start with `Gewijzigd bij:`. On the eval set that line did not raise the vector-hit count (`docs/EVAL_RESULTS.md`).
 
 **Real examples** (these are the golden tests for the header builder):
 
@@ -298,7 +298,7 @@ class LLMClient(Protocol):
 ```
 
 - `OpenAICompatibleEmbeddings` sends the `dimensions` parameter and verifies the length of what comes back. `embed_query` prefixes the model's task instruction, `embed_documents` does not.
-- `OpenAICompatibleLLM` requests JSON-schema structured output, validates with Pydantic, and retries a limited number of times on invalid output (strategy to be settled after the reliability test).
+- `OpenAICompatibleLLM` requests JSON-schema structured output, validates with Pydantic, and retries up to `LLM_MAX_RETRIES` on invalid output. The live reliability run kept that budget at 1 (`docs/EVAL_RESULTS.md`).
 - **Reasoning is a per-step setting.** `ANSWER_REASONING_EFFORT` is `medium`, and `SELECTION_REASONING_EFFORT` is a separate setting. The pipeline only sees the effort level. The adapter translates it into the provider's request format: OpenRouter's reasoning parameter for the hosted endpoint, and the model's chat-template option for vLLM. The exact mappings are to be verified per provider. Reasoning content returned by the model is neither shown nor stored, only the final content is parsed, and reasoning tokens are counted in `usage`.
 - `fakes.py` provides a deterministic fake embedder and a scripted fake LLM that returns queued responses, so pipeline tests need no network.
 
@@ -460,7 +460,7 @@ All configuration is environment variables. `.env.example` holds the online defa
 | `LLM_API_KEY` | (secret) | Not needed offline. |
 | `SELECTION_MODEL`, `ANSWER_MODEL` | `qwen/qwen3.8-27b` | One setting per step, same default. |
 | `ANSWER_REASONING_EFFORT` | `medium` | Reasoning on for the final answer. |
-| `SELECTION_REASONING_EFFORT` | to be decided | |
+| `SELECTION_REASONING_EFFORT` | `low` | Measured against `none` and `medium`. |
 | `EMBEDDING_BASE_URL` | OpenRouter API URL | Offline: `http://vllm-embed:8000/v1` |
 | `EMBEDDING_API_KEY` | (secret) | |
 | `EMBEDDING_MODEL` | `qwen/qwen3-embedding-8b` | Offline: the name the vLLM server is started with. |
@@ -468,8 +468,8 @@ All configuration is environment variables. `.env.example` holds the online defa
 | `EMBEDDING_BATCH_SIZE` | `100` | Practical batching size for provider requests. |
 | `DATABASE_URL` | internal `db` service | |
 | `RETRIEVAL_TOP_K` | `10` | |
-| `SIMILARITY_THRESHOLD` | to be tuned | |
-| `MAX_ADDED_PROVISIONS` | to be tuned | |
+| `SIMILARITY_THRESHOLD` | `0.5959` | Q09 falls below it; Q01–Q08 do not. |
+| `MAX_ADDED_PROVISIONS` | `1` | Longest `via_reference` list in the eval set. |
 | `SPLIT_TOKEN_LIMIT` | `30000` | |
 | `PROMPT_TOKEN_BUDGET` | per profile | Lower-ranked chunks are dropped above it. |
 | `RETRIEVAL_HISTORY_TURNS` | `5` | Number of most recent user messages used to form the retrieval query. |
@@ -595,8 +595,7 @@ The offline profile is last on purpose. It is configuration and documentation ra
 ## 13. Open items
 
 - **Retrieval query for follow-ups.** Vector search on "and if we are the deployer?" finds nothing useful. v1 forms the query from the last five user messages (`RETRIEVAL_HISTORY_TURNS=5`). The risk is the opposite one: after a change of topic within a session, older questions dilute the query. The eval set is single-turn for now, so this behavior is covered by unit tests of the query builder only, and the two risks stay untested end to end.
-- **Structured-output reliability and retry strategy**, from the live test.
-- **Reasoning settings.** Decided: reasoning on at medium effort for the final answer. Still open: the setting for the selection step, the provider-specific parameter mappings (OpenRouter and vLLM), and whether the explicit `reasoning` field in `AnswerResult` is still needed now that native reasoning is on, or is kept only as a short visible rationale.
+- **Reasoning settings.** Decided: `low` for selection and `medium` for the final answer (`docs/EVAL_RESULTS.md`). Still open: the vLLM parameter mapping, and whether the explicit `reasoning` field in `AnswerResult` is still needed now that native reasoning is on, or is kept only as a short visible rationale.
 - **Prompt language** (English with Dutch output, provisional), checked against the eval set.
 - **Logging of user input.** Questions may contain confidential system descriptions, so logs record request ids, step timings, and token counts, and message content only at debug level.
 - **Embedding task instruction** wording, and its exact format per the model card.

@@ -81,7 +81,17 @@ test-frontend: ## Run the frontend suite
 	$(COMPOSE) $(PROFILE_TEST) run --rm frontend-test pytest
 
 test-live: ## Run the opt-in suite against real providers
-	$(COMPOSE) $(PROFILE_TEST) run --rm backend-test \
+	@test -f .env || { echo "Missing .env. Copy .env.example to .env and fill secrets."; exit 1; }
+	set -a; . ./.env; set +a; \
+	$(COMPOSE) $(PROFILE_TEST) run --rm \
+		-e LLM_API_KEY -e EMBEDDING_API_KEY \
+		-e LLM_BASE_URL -e EMBEDDING_BASE_URL \
+		-e EMBEDDING_MODEL -e SELECTION_MODEL -e ANSWER_MODEL \
+		-e EMBEDDING_DIMENSIONS -e LLM_TIMEOUT_SECONDS \
+		-e ANSWER_REASONING_EFFORT -e SELECTION_REASONING_EFFORT \
+		-e SIMILARITY_THRESHOLD -e MAX_ADDED_PROVISIONS -e RETRIEVAL_TOP_K \
+		-e LLM_MAX_RETRIES \
+		backend-test \
 		pytest -m live -o addopts=
 
 verify-providers: ## Probe OpenRouter and write PROVIDER_NOTES.md (needs keys)

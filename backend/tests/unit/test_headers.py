@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 
 from app.errors import UnknownAmendment
-from app.ingestion.headers import build_header, embedded_text
+from app.ingestion.headers import build_header, embedded_text, text_for_embedding
 from app.ingestion.manifest import DocumentSpec, load_indexed_provisions, load_manifest
 from app.ingestion.models import ParsedProvision
 
@@ -124,3 +124,12 @@ def test_header_unknown_amendment_raises() -> None:
 @pytest.mark.unit
 def test_embedded_text_joins_header_and_body_with_blank_line() -> None:
     assert embedded_text("HEADER", "BODY") == "HEADER\n\nBODY"
+
+
+@pytest.mark.unit
+def test_text_for_embedding_omits_the_status_line() -> None:
+    header = "Doc line\nGewijzigd bij: Omnibus (id)\nArtikel 6: Title"
+    embedded = text_for_embedding(header, "body")
+    assert "Gewijzigd bij:" not in embedded
+    assert "Artikel 6: Title" in embedded
+    assert embedded_text(header, "body") == f"{header}\n\nbody"

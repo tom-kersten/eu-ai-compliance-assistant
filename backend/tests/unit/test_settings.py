@@ -59,15 +59,15 @@ def test_settings_defaults_when_env_unset(monkeypatch: pytest.MonkeyPatch) -> No
     assert settings.selection_model == "qwen/qwen3.8-27b"
     assert settings.answer_model == "qwen/qwen3.8-27b"
     assert settings.answer_reasoning_effort == "medium"
-    assert settings.selection_reasoning_effort is None
+    assert settings.selection_reasoning_effort == "low"
     assert settings.embedding_base_url == "https://openrouter.ai/api/v1"
     assert settings.embedding_api_key == ""
     assert settings.embedding_model == "qwen/qwen3-embedding-8b"
     assert settings.embedding_dimensions == 2000
     assert settings.database_url == "postgresql://app:app@db:5432/compliance"
     assert settings.retrieval_top_k == 10
-    assert settings.similarity_threshold is None
-    assert settings.max_added_provisions is None
+    assert settings.similarity_threshold == 0.5959
+    assert settings.max_added_provisions == 1
     assert settings.split_token_limit == 30000
     assert settings.prompt_token_budget is None
     assert settings.retrieval_history_turns == 5

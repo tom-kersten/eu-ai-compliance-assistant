@@ -33,7 +33,7 @@ class Settings(BaseSettings):
     selection_model: str = "qwen/qwen3.8-27b"
     answer_model: str = "qwen/qwen3.8-27b"
     answer_reasoning_effort: str = "medium"
-    selection_reasoning_effort: EmptyAsNoneStr = None
+    selection_reasoning_effort: EmptyAsNoneStr = "low"
     embedding_base_url: str = "https://openrouter.ai/api/v1"
     embedding_api_key: str = ""
     embedding_model: str = "qwen/qwen3-embedding-8b"
@@ -42,8 +42,8 @@ class Settings(BaseSettings):
     database_url: str = "postgresql://app:app@db:5432/compliance"
     serving_profile: str = "online"
     retrieval_top_k: Annotated[int, Field(gt=0)] = 10
-    similarity_threshold: EmptyAsNoneFloat = None
-    max_added_provisions: EmptyAsNoneInt = None
+    similarity_threshold: EmptyAsNoneFloat = 0.5959
+    max_added_provisions: EmptyAsNoneInt = 1
     split_token_limit: Annotated[int, Field(gt=0)] = 30000
     prompt_token_budget: EmptyAsNoneInt = None
     retrieval_history_turns: Annotated[int, Field(ge=0)] = 5

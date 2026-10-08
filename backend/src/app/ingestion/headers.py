@@ -10,8 +10,24 @@ from app.ingestion.models import ParsedProvision, ProvisionKind
 
 
 def embedded_text(header: str, body: str) -> str:
-    """Text that is embedded and shown to the LLM."""
+    """Header plus body, including the status line. Shown to the LLM and the user."""
     return f"{header}\n\n{body}"
+
+
+def text_for_embedding(header: str, body: str) -> str:
+    """Embedding input. The status line is left out.
+
+    On the eval set, including `Gewijzigd bij` did not raise the vector-hit
+    count, so it is not part of the embedded text. The stored header still
+    carries it for the model and the UI.
+    """
+    kept = [
+        line for line in header.splitlines() if not line.startswith("Gewijzigd bij:")
+    ]
+    used = "\n".join(kept)
+    if not used:
+        return body
+    return f"{used}\n\n{body}"
 
 
 def chapter_display(numeral: str, title: str) -> str:

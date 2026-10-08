@@ -101,5 +101,26 @@ async def test_openrouter_llm_includes_response_format_and_reasoning_and_retries
     data = await adapter.respond(prompt="hello", schema=None)
     assert data["output"]["result"] == "ok"
     # ensure reasoning present and response_format (in second call too)
-    assert any("reasoning" in c for c in calls)
+    assert any("reasoning" in call for call in calls)
+    await client.aclose()
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_openrouter_llm_omits_reasoning_when_caller_disables_it() -> None:
+    settings = Settings()
+    settings.answer_reasoning_effort = "medium"
+    captured: list[dict] = []
+
+    async def handler(request: httpx.Request) -> httpx.Response:
+        captured.append(json.loads(request.content.decode()))
+        return httpx.Response(200, json={"output": {"result": "ok"}})
+
+    transport = httpx.MockTransport(handler)
+    client = httpx.AsyncClient(transport=transport)
+    adapter = OpenRouterAdapter(settings)
+    adapter.client = client
+
+    await adapter.respond(prompt="hello", reasoning=None)
+    assert "reasoning" not in captured[0]
     await client.aclose()

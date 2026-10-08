@@ -15,6 +15,13 @@ from .base import LLM, Embedder, EmbeddingDimensionError
 logger = logging.getLogger(__name__)
 
 
+class _UnsetType:
+    """Marks a respond() argument the caller did not pass."""
+
+
+_UNSET = _UnsetType()
+
+
 def openrouter_reasoning_params(effort: str | None) -> dict:
     if not effort:
         return {}
@@ -66,7 +73,7 @@ class OpenRouterAdapter(Embedder, LLM):
         prompt: str | None = None,
         messages: Sequence[dict] | None = None,
         schema: BaseModel | None = None,
-        reasoning: dict | None = None,
+        reasoning: dict | None | _UnsetType = _UNSET,
     ) -> dict:
         url = f"{self.settings.llm_base_url.rstrip('/')}/responses"
         body: dict[str, Any] = {"model": self.settings.selection_model}
@@ -81,11 +88,17 @@ class OpenRouterAdapter(Embedder, LLM):
                 "additionalProperties": False,
                 "schema": schema.schema(),
             }
-        reasoning_dict = reasoning or {
-            "effort": self.settings.answer_reasoning_effort,
-            "exclude": False,
-        }
-        body["reasoning"] = reasoning_dict
+        # None means this step has reasoning off. The default applies only
+        # when the caller did not pass `reasoning` at all.
+        if isinstance(reasoning, _UnsetType):
+            reasoning_body: dict | None = {
+                "effort": self.settings.answer_reasoning_effort,
+                "exclude": False,
+            }
+        else:
+            reasoning_body = reasoning
+        if reasoning_body:
+            body["reasoning"] = reasoning_body
 
         attempt = 0
         max_retries = int(self.settings.llm_max_retries)
