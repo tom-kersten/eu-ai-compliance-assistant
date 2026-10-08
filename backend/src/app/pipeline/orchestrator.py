@@ -8,7 +8,7 @@ from typing import Any
 
 from app.config import Settings
 from app.pipeline.budget import apply_budget
-from app.pipeline.prompts.answer import ANSWER_PROMPT_VERSION, build_answer_prompt
+from app.pipeline.prompts.answer import ANSWER_PROMPT_VERSION
 from app.pipeline.prompts.selection import (
     SELECTION_PROMPT_VERSION,
     build_selection_prompt,
@@ -239,16 +239,7 @@ async def run(
         for u in rr.unavailable
     ]
 
-    ans_msgs = build_answer_prompt(
-        request.messages,
-        request.situation,
-        final_context_dicts,
-        unavailable_for_prompt,
-        documents,
-        snapshot,
-    )
-
-    # answer attempts
+    # answer attempts — answer() builds the prompt from the conversation once
     answer_result = None
     for attempt in range(max_attempts):
         try:
@@ -256,7 +247,7 @@ async def run(
 
             answer_result = await answer_step(
                 tracker,
-                ans_msgs,
+                request.messages,
                 request.situation,
                 final_context_dicts,
                 unavailable_for_prompt,

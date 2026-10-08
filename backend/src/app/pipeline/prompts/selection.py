@@ -7,8 +7,9 @@ from app.schemas.llm import Message, Situation
 
 from . import load_prompt
 from .provision_format import format_provision
+from .situation_format import format_situation
 
-SELECTION_PROMPT_VERSION = "T11v1"
+SELECTION_PROMPT_VERSION = "T18v3"
 
 
 def build_selection_prompt(
@@ -19,30 +20,28 @@ def build_selection_prompt(
     snapshot: date,
     max_added: int | None,
 ) -> list[Message]:
-    """Build a simple selection prompt message list.
+    """Build selection prompt messages from conversation and retrieved provisions.
 
     - `retrieved` is an iterable of dicts with keys: ref, header, body.
     - `documents` is an iterable of dicts with keys: key, short_name, identifier.
     """
-    provisions = []
-    for r in retrieved:
-        provisions.append(
-            format_provision(r["ref"], r.get("header", ""), r.get("body", ""))
-        )
-    prov_block = "\n\n".join(provisions)
-    docs_lines = []
-    for d in documents:
-        docs_lines.append(
-            f"{d['key']}: {d.get('short_name', '')} ({d.get('identifier', '')})"
-        )
-    prompt_template = load_prompt("selection")
-    content = prompt_template.format(
+    provisions = [
+        format_provision(r["ref"], r.get("header", ""), r.get("body", ""))
+        for r in retrieved
+    ]
+    docs_lines = [
+        f"{d['key']}: {d.get('short_name', '')} ({d.get('identifier', '')})"
+        for d in documents
+    ]
+    cap = 0 if max_added is None else max_added
+    content = load_prompt("selection").format(
         version=SELECTION_PROMPT_VERSION,
-        provisions=prov_block,
+        provisions="\n\n".join(provisions),
         documents="\n".join(docs_lines),
         snapshot=snapshot.isoformat(),
+        situation=format_situation(situation),
+        max_added=cap,
     )
-    # include conversation as system/user/history messages before the prompt
-    msgs = [m for m in conversation]
+    msgs = list(conversation)
     msgs.append(Message(role="user", content=content))
     return msgs

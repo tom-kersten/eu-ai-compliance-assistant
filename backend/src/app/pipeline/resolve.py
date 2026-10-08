@@ -14,6 +14,13 @@ def normalize_label(kind: str, label: str) -> str:
     # remove surrounding parens
     lab = re.sub(r"^\(+|\)+$", "", lab).strip()
     if kind == "article":
+        # Strip common prose prefixes the model may include in `label`.
+        lab = re.sub(
+            r"^(artikel|article|art[._]?)\s*",
+            "",
+            lab,
+            flags=re.IGNORECASE,
+        ).strip()
         # match number and optional bis/ter/quater or trailing letter
         m = re.match(r"^(\d+)\s*(bis|ter|quater|[a-c])?$", lab, flags=re.IGNORECASE)
         if not m:
@@ -27,11 +34,23 @@ def normalize_label(kind: str, label: str) -> str:
         letter = suf_map.get(suf, suf)
         return f"art_{num}{letter}"
     elif kind == "annex":
+        lab = re.sub(
+            r"^(bijlage|annex|anx\.?|_)\s*",
+            "",
+            lab,
+            flags=re.IGNORECASE,
+        ).strip()
         # roman numerals -> uppercase
         r = lab.upper()
         r = re.sub(r"[^IVXLCDM]", "", r)
         return f"anx_{r}"
     elif kind == "recital":
+        lab = re.sub(
+            r"^(overweging|recital|rct\.?|_)\s*",
+            "",
+            lab,
+            flags=re.IGNORECASE,
+        ).strip()
         num = re.sub(r"[^\d]", "", lab)
         return f"rct_{num}"
     else:

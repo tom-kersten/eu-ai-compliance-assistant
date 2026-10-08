@@ -1,6 +1,9 @@
-from eval.metrics import selection_hit, vector_hit
+import pytest
 
 from app.schemas.api import RetrievedEvent, RetrievedItem, SelectionEvent
+from eval.metrics import selection_hit, vector_hit
+
+pytestmark = pytest.mark.unit
 
 
 def test_vector_and_selection_hit_false_for_empty():

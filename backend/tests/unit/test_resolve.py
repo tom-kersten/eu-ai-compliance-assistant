@@ -1,8 +1,12 @@
 import asyncio
 
+import pytest
+
 from app.pipeline.resolve import normalize_label, resolve
 from app.schemas.domain import Provision
 from app.schemas.llm import ExternalReference, RequestedProvision
+
+pytestmark = pytest.mark.unit
 
 
 def test_normalize_label_cases():
@@ -12,6 +16,16 @@ def test_normalize_label_cases():
     assert normalize_label("annex", "III") == "anx_III"
     assert normalize_label("annex", "iii") == "anx_III"
     assert normalize_label("recital", "(40)") == "rct_40"
+
+
+def test_normalize_label_strips_common_prefixes():
+    # Models often emit "Artikel15" or "art.6" instead of the bare label.
+    assert normalize_label("article", "Artikel15") == "art_15"
+    assert normalize_label("article", "artikel 113") == "art_113"
+    assert normalize_label("article", "art.6") == "art_6"
+    assert normalize_label("article", "art_15") == "art_15"
+    assert normalize_label("annex", "bijlage III") == "anx_III"
+    assert normalize_label("recital", "overweging 40") == "rct_40"
 
 
 class StubLookup:
@@ -45,7 +59,7 @@ def test_resolve_basic():
     rows = {"DOC:art_1": [make_provision("DOC:art_1")]}
     lookup = StubLookup(rows)
     req = RequestedProvision(document="DOC", kind="article", label="1", reason="r")
-    res = asyncio.get_event_loop().run_until_complete(
+    res = asyncio.run(
         resolve(
             [req],
             [],
@@ -64,7 +78,7 @@ def test_resolve_not_indexed_and_external():
     lookup = StubLookup(rows)
     req = RequestedProvision(document="DOC", kind="article", label="1", reason="r")
     ext = ExternalReference(citation="http://x", reason="r")
-    res = asyncio.get_event_loop().run_until_complete(
+    res = asyncio.run(
         resolve(
             [req],
             [ext],
@@ -88,7 +102,7 @@ def test_resolve_over_cap():
         RequestedProvision(document="DOC", kind="article", label="1", reason="r"),
         RequestedProvision(document="DOC", kind="article", label="2", reason="r"),
     ]
-    res = asyncio.get_event_loop().run_until_complete(
+    res = asyncio.run(
         resolve(reqs, [], kept=[], document_keys=["DOC"], lookup=lookup, max_added=1)
     )
     assert len(res.added) == 1

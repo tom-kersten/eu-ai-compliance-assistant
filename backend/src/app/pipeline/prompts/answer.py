@@ -7,8 +7,9 @@ from app.schemas.llm import Message, Situation
 
 from . import load_prompt
 from .provision_format import format_provision
+from .situation_format import format_situation
 
-ANSWER_PROMPT_VERSION = "T12v1"
+ANSWER_PROMPT_VERSION = "T18v3"
 
 UNAVAILABLE_REASON_TEXT = {
     "not_indexed": "not in the corpus (not indexed)",
@@ -25,26 +26,21 @@ def build_answer_prompt(
     documents: Iterable[dict],
     snapshot: date,
 ) -> list[Message]:
-    """Build the answer prompt messages list.
+    """Build answer prompt messages from conversation and final context.
 
     - `final_context` is an iterable of dicts with keys: ref, header, body.
     - `unavailable` is an iterable of dicts with keys:
       citation, reason, detail (optional).
     - `documents` is an iterable of dicts with keys: key, short_name, identifier.
     """
-    provisions = []
-    for p in final_context:
-        provisions.append(
-            format_provision(p["ref"], p.get("header", ""), p.get("body", ""))
-        )
-    prov_block = "\n\n".join(provisions)
-
-    docs_lines = []
-    for d in documents:
-        docs_lines.append(
-            f"{d['key']}: {d.get('short_name', '')} ({d.get('identifier', '')})"
-        )
-
+    provisions = [
+        format_provision(p["ref"], p.get("header", ""), p.get("body", ""))
+        for p in final_context
+    ]
+    docs_lines = [
+        f"{d['key']}: {d.get('short_name', '')} ({d.get('identifier', '')})"
+        for d in documents
+    ]
     unavailable_lines = []
     for u in unavailable:
         reason_text = UNAVAILABLE_REASON_TEXT.get(
@@ -56,15 +52,14 @@ def build_answer_prompt(
         else:
             unavailable_lines.append(f"{u.get('citation')}: {reason_text}")
 
-    prompt_template = load_prompt("answer")
-    content = prompt_template.format(
+    content = load_prompt("answer").format(
         version=ANSWER_PROMPT_VERSION,
-        provisions=prov_block,
+        provisions="\n\n".join(provisions),
         documents="\n".join(docs_lines),
         unavailable="\n".join(unavailable_lines),
-        situation=situation.model_dump(),
+        situation=format_situation(situation),
         snapshot=snapshot.isoformat(),
     )
-    msgs = [m for m in conversation]
+    msgs = list(conversation)
     msgs.append(Message(role="user", content=content))
     return msgs

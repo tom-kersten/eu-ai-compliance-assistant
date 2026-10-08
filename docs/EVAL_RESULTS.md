@@ -87,3 +87,38 @@ Hosted result, model `qwen/qwen3.8-27b`:
 Both rates are 10/10, so `LLM_MAX_RETRIES` stays 1: one retry remains for a rare invalid output, and the pipeline still stops after that and emits an error.
 
 Self-hosted (`http://vllm-llm:8000/v1`): not running during this measurement.
+
+## Prompt tuning (T18)
+
+Hosted run against the committed retrieval settings above. Prompts: selection `T18v3`, answer `T18v3`. Report: `backend/src/eval/reports/prompt_eval.json` (Q06 answer step retried once after a `JSONDecodeError` and merged from a single-question re-run).
+
+A context hit means every `must` ref is in the final context (kept plus added). Behavior match means the final action equals `expected_behavior`. Q09 must make zero LLM calls.
+
+| Question | Context hit | Action | Expected | Behavior match | LLM calls | Notes |
+|---|---|---|---|---|---|---|
+| Q01 | yes | answer | answer | yes | 2 | |
+| Q02 | yes | answer | answer | yes | 2 | Duty placed on the aanbieder |
+| Q03 | yes | answer | answer | yes | 2 | |
+| Q04 | yes | answer | answer | yes | 3 | |
+| Q05 | yes | clarify | answer | no | 3 | See miss below |
+| Q06 | yes | answer | answer | yes | 2 | `art_15` added under the cap; recital labeled as overweging |
+| Q07 | yes | answer | answer | yes | 2 | `art_113` added under the cap |
+| Q08 | no | clarify | clarify | yes | 2 | `art_6` added; `art_16` still missing |
+| Q09 | yes | cannot_answer | cannot_answer | yes | 0 | No LLM call |
+
+Totals: context hits **8/9**, behavior matches **8/9**.
+
+### Qualitative review
+
+Answers for Q01–Q04, Q06, and Q07 are in Dutch, address the user formally, and use source terms (`aanbieder`, `gebruiksverantwoordelijke`). Citations stayed inside the final context (enforced by validation). No compliance verdicts were observed. Where an Omnibus recital was used (Q06), the answer labeled it as an overweging. Clarifying questions (Q05, Q08) were short Dutch role questions with empty answer text.
+
+### Misses and hypotheses
+
+- **Q05 (behavior).** Final context has `art_4a`, `art_10`, and AVG `art_9`, but the model asked for role and high-risk status instead of answering. Hypothesis: it treats “wij” as role-ambiguous even though artikel 4a already assigns the bias-processing exception to aanbieders; a prefer-answer-when-the-provision-names-the-role rule is already in the prompt but is not followed reliably.
+- **Q08 (context).** Behavior is correct (`clarify`). `art_6` was requested and added; `art_16` is rank 19 and never enters the top 10, and the added-provision cap is 1, so both cannot be recovered. Hypothesis: retrieval miss for provider obligations, not a prompt bug; raising the cap would trade off other questions.
+- **Q06 (transient).** The first full-suite answer call returned truncated JSON (`JSONDecodeError`). Selection had already added `art_15` correctly after label normalization accepted forms like `Artikel15`. A single re-run answered successfully. Hypothesis: occasional long structured outputs under `ANSWER_REASONING_EFFORT=medium` still fail parse; the existing retry budget covers this when the second attempt is valid.
+
+### Prompt and resolve changes that moved the needle
+
+- Selection and answer prompts rewritten to match `PROMPT_SPEC` (keep/discard, clarify conditions, no role inference from “gebruiken”, bare request labels).
+- `normalize_label` strips common prefixes (`Artikel15`, `art.6`, `bijlage III`) so requested provisions resolve to indexed refs. That fixed Q06 `art_15` and Q07 `art_113` context misses from the earlier T18v2 run.
