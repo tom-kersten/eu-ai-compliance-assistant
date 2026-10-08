@@ -70,7 +70,7 @@ The LLM and embedding endpoints are selected independently by configuration, so 
 │   ├── src/ui/                   # app.py, client.py, state.py, components.py
 │   └── tests/
 ├── eval/                         # eval_questions.json, run_eval.py
-└── docs/                         # REFERENCE.md, ARCHITECTURE.md, README
+└── docs/                         # REFERENCE.md, ARCHITECTURE.md
 ```
 
 **Dependency rule:** `pipeline` imports only `schemas` and the protocols in `providers/base.py`. `api` wires concrete providers and the repository into the pipeline. `ingestion` and `pipeline` do not import each other.
