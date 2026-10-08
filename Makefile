@@ -49,13 +49,13 @@ new-migration: ## Create the next numbered migration file in postgres/migrations
 		backend-test \
 		python -m app.store.migrate new-migration "$(name)" --directory /migrations
 
-ingest: ## Run ingestion into the migrated database (needs T9)
-	@echo "ingest: not implemented until T9 (ingestion command)."
-	@exit 1
+ingest: ## Run ingestion into the migrated database
+	@test -f .env || { echo "Missing .env. Copy .env.example to .env."; exit 1; }
+	ENV_FILE=.env $(COMPOSE) --env-file .env run --rm backend ingest
 
-ingest-reset: ## Clear existing provisions, then run ingestion (needs T9)
-	@echo "ingest-reset: not implemented until T9 (ingestion command)."
-	@exit 1
+ingest-reset: ## Clear existing provisions, then run ingestion
+	@test -f .env || { echo "Missing .env. Copy .env.example to .env."; exit 1; }
+	ENV_FILE=.env $(COMPOSE) --env-file .env run --rm backend ingest --reset
 
 psql: ## Open a psql shell in the database
 	@test -f .env || { echo "Missing .env. Copy .env.example to .env."; exit 1; }

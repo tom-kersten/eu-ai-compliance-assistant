@@ -51,7 +51,7 @@ async def test_openrouter_embed_request_includes_dimensions_and_model() -> None:
         payload = json.loads(request.content.decode())
         assert payload["model"] == "test-model"
         assert "input" in payload
-        assert payload["parameters"]["dimensions"] == 8
+        assert payload["dimensions"] == 8
         # Return embeddings with correct length
         embeddings = [{"embedding": [0.1] * 8} for _ in payload["input"]]
         return httpx.Response(200, json={"data": embeddings})

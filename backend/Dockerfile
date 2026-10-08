@@ -29,7 +29,12 @@ RUN printf '%s\n' \
         '#!/bin/sh' \
         'exec python -m app.store.migrate "$@"' \
     > /usr/local/bin/migrate \
-    && chmod 755 /usr/local/bin/migrate
+    && chmod 755 /usr/local/bin/migrate \
+    && printf '%s\n' \
+        '#!/bin/sh' \
+        'exec python -m app.ingestion.run "$@"' \
+    > /usr/local/bin/ingest \
+    && chmod 755 /usr/local/bin/ingest
 
 COPY --chown=app:app src ./src
 

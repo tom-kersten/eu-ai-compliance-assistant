@@ -39,18 +39,27 @@ class OpenRouterAdapter(Embedder, LLM):
         # Keep attribute for test injection.
         self.client = self._client
 
+    def _auth_headers(self, api_key: str) -> dict[str, str]:
+        if not api_key:
+            return {}
+        return {"Authorization": f"Bearer {api_key}"}
+
     async def embed_documents(self, texts: Sequence[str]) -> list[list[float]]:
         url = f"{self.settings.embedding_base_url.rstrip('/')}/embeddings"
         payload = {
             "model": self.settings.embedding_model,
             "input": list(texts),
-            "parameters": {"dimensions": int(self.settings.embedding_dimensions)},
+            "dimensions": int(self.settings.embedding_dimensions),
         }
         logger.debug(
             "embeddings request payload prepared",
             extra={"model": self.settings.embedding_model},
         )
-        resp = await self.client.post(url, json=payload)
+        resp = await self.client.post(
+            url,
+            json=payload,
+            headers=self._auth_headers(self.settings.embedding_api_key),
+        )
         resp.raise_for_status()
         data = resp.json()
         embeddings = [item["embedding"] for item in data.get("data", [])]
@@ -105,7 +114,11 @@ class OpenRouterAdapter(Embedder, LLM):
         while True:
             try:
                 logger.debug("LLM request prepared", extra={"model": body.get("model")})
-                resp = await self.client.post(url, json=body)
+                resp = await self.client.post(
+                    url,
+                    json=body,
+                    headers=self._auth_headers(self.settings.llm_api_key),
+                )
                 if resp.status_code == 429 or resp.status_code >= 500:
                     raise httpx.HTTPStatusError(
                         "retryable",
