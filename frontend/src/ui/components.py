@@ -9,41 +9,56 @@ import streamlit as st
 from ui import strings
 from ui.client import RetrievedEvent, SelectionEvent, StatusEvent
 
+_STEP_LABELS = {
+    "searching": strings.PROGRESS_SEARCHING,
+    "selecting": strings.PROGRESS_SELECTING,
+    "answering": strings.PROGRESS_ANSWERING,
+}
 
-def render_history(history: list[dict[str, Any]]) -> None:
-    for msg in history:
-        role = msg.get("role", "assistant")
-        with st.chat_message(role):
-            st.markdown(msg.get("content") or "")
+
+def render_message(msg: dict[str, Any]) -> None:
+    with st.chat_message(msg.get("role", "assistant")):
+        st.markdown(msg.get("content") or "")
+
+
+def render_history(
+    history: list[dict[str, Any]], progress_events: list[Any] | None = None
+) -> None:
+    """Render the conversation, with the latest question's progress right after it."""
+    last_user = max(
+        (i for i, msg in enumerate(history) if msg.get("role") == "user"),
+        default=None,
+    )
+    for i, msg in enumerate(history):
+        render_message(msg)
+        if i == last_user and progress_events:
+            render_progress(progress_events)
+
+
+def write_progress_event(status: Any, event: Any) -> None:
+    """Append one stream event to an open `st.status` block."""
+    if isinstance(event, StatusEvent):
+        label = _STEP_LABELS.get(event.step or "")
+        if label:
+            status.update(label=label)
+            status.write(label)
+    elif isinstance(event, RetrievedEvent):
+        refs = [p.get("ref", "") for p in event.provisions]
+        status.write(f"{strings.PROGRESS_FOUND}: {', '.join(refs) or '—'}")
+    elif isinstance(event, SelectionEvent):
+        status.write(f"{strings.PROGRESS_KEPT}: {', '.join(event.kept) or '—'}")
+        status.write(f"{strings.PROGRESS_ADDED}: {', '.join(event.added) or '—'}")
+        status.write(
+            f"{strings.PROGRESS_UNAVAILABLE}: {', '.join(event.unavailable) or '—'}"
+        )
 
 
 def render_progress(events: list[Any]) -> None:
-    if not events:
-        return
-    with st.status(strings.PROGRESS_LABEL, expanded=True) as status:
-        for event in events:
-            if isinstance(event, StatusEvent):
-                step = event.step or ""
-                if step == "searching":
-                    status.update(label=strings.PROGRESS_SEARCHING)
-                    st.write(strings.PROGRESS_SEARCHING)
-                elif step == "selecting":
-                    status.update(label=strings.PROGRESS_SELECTING)
-                    st.write(strings.PROGRESS_SELECTING)
-                elif step == "answering":
-                    status.update(label=strings.PROGRESS_ANSWERING)
-                    st.write(strings.PROGRESS_ANSWERING)
-            elif isinstance(event, RetrievedEvent):
-                refs = [p.get("ref", "") for p in event.provisions]
-                st.write(f"{strings.PROGRESS_FOUND}: {', '.join(refs) or '—'}")
-            elif isinstance(event, SelectionEvent):
-                st.write(f"{strings.PROGRESS_KEPT}: {', '.join(event.kept) or '—'}")
-                st.write(f"{strings.PROGRESS_ADDED}: {', '.join(event.added) or '—'}")
-                st.write(
-                    f"{strings.PROGRESS_UNAVAILABLE}: "
-                    f"{', '.join(event.unavailable) or '—'}"
-                )
-        status.update(label=strings.PROGRESS_LABEL, state="complete")
+    """The finished progress of an answered question, collapsed."""
+    status = st.status(strings.PROGRESS_LABEL, expanded=False)
+    for event in events:
+        write_progress_event(status, event)
+    status.update(label=strings.PROGRESS_LABEL, state="complete", expanded=False)
 
 
 def render_situation_panel(_situation: dict[str, Any]) -> dict[str, Any]:

@@ -210,3 +210,40 @@ def test_requested_provision_and_external_reference_round_trip() -> None:
     restored = SelectionResult.model_validate(selection.model_dump())
     assert restored == selection
     assert restored.request[1].document == "DSA"
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize(
+    "placeholder",
+    ["none", "None", " unknown ", "null", "n/a", "N.v.t.", "-", "", "onbekend", "geen"],
+)
+def test_situation_placeholder_text_becomes_none(placeholder: str) -> None:
+    situation = Situation(role="unknown", domain=placeholder, notes=placeholder)
+    assert situation.domain is None
+    assert situation.notes is None
+
+
+@pytest.mark.unit
+def test_situation_keeps_real_values() -> None:
+    situation = Situation(role="provider", domain=" hr ", notes="cv-screening")
+    assert situation.role == "provider"
+    assert situation.domain == "hr"
+    assert situation.notes == "cv-screening"
+
+
+@pytest.mark.unit
+def test_answer_result_situation_from_model_output_is_cleaned() -> None:
+    # The answer model has been observed returning these literals for fields
+    # the user never stated.
+    result = AnswerResult.model_validate(
+        {
+            "reasoning": "r",
+            "action": "answer",
+            "answer": "Een aanbieder brengt een AI-systeem in de handel.",
+            "clarifying_questions": [],
+            "citations": ["AI-verordening:art_3"],
+            "situation": {"role": "unknown", "domain": "unknown", "notes": "none"},
+        }
+    )
+    assert result.situation.domain is None
+    assert result.situation.notes is None

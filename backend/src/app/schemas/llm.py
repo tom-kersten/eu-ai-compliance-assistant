@@ -4,13 +4,18 @@ from __future__ import annotations
 
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from app.schemas.domain import DocumentName, ProvisionKind
 
 AnswerAction = Literal["answer", "clarify", "cannot_answer"]
 RoleName = Literal["user", "assistant"]
 SituationRole = Literal["provider", "deployer", "importer", "distributor", "unknown"]
+
+# Text the answer model writes into domain/notes when the user never stated them.
+_UNSTATED = frozenset(
+    {"", "-", "none", "null", "unknown", "n/a", "n.v.t.", "onbekend", "geen"}
+)
 
 
 class Message(BaseModel):
@@ -34,6 +39,14 @@ class Situation(BaseModel):
     role: SituationRole = "unknown"
     domain: str | None = None
     notes: str | None = None
+
+    @field_validator("domain", "notes")
+    @classmethod
+    def _unstated_to_none(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        text = value.strip()
+        return None if text.lower() in _UNSTATED else text
 
 
 class RequestedProvision(BaseModel):

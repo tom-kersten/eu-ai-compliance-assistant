@@ -32,6 +32,67 @@ def _all_markdown(at: AppTest) -> str:
     return "\n".join(parts)
 
 
+def _bottom_block(at: AppTest):
+    """The container pinned to the bottom of the page (it holds the chat input)."""
+    for block in at._tree.children.values():
+        if any(type(c).__name__ == "ChatInput" for c in block.children.values()):
+            return block
+    raise AssertionError("no block holds the chat input")
+
+
+def _app_with_answer_stub(monkeypatch) -> tuple[AppTest, StubClient]:
+    stub = StubClient()
+    stub.set_corpus(CorpusInfo(documents=[], snapshot_date="2026-10-01"))
+    stub.queue_ask("full.events")
+    monkeypatch.setattr("ui.client.get_client", lambda: stub)
+    at = AppTest.from_file(str(APP_PATH))
+    at.run()
+    assert not at.exception
+    return at, stub
+
+
+def test_situation_panel_is_in_right_column_not_sidebar(monkeypatch) -> None:
+    at, _ = _app_with_answer_stub(monkeypatch)
+
+    assert not at.sidebar.selectbox
+    assert not at.sidebar.text_input
+    chat_col, situation_col = at.columns[0], at.columns[1]
+    assert situation_col.selectbox[0].label == strings.ROLE_LABEL
+    labels = [ti.label for ti in situation_col.text_input]
+    assert strings.DOMAIN_LABEL in labels
+    assert not chat_col.selectbox
+
+
+def test_notices_render_below_the_chat_input(monkeypatch) -> None:
+    at, _ = _app_with_answer_stub(monkeypatch)
+
+    children = list(_bottom_block(at).children.values())
+    kinds = [type(c).__name__ for c in children]
+    texts = [str(getattr(c, "value", "")) for c in children]
+    input_at = kinds.index("ChatInput")
+    disclaimer_at = texts.index(strings.DISCLAIMER)
+    assert input_at < disclaimer_at
+    assert strings.EU_ASSUMPTION in texts[input_at:]
+
+
+def test_conversation_orders_question_then_progress_then_answer(monkeypatch) -> None:
+    at, _ = _app_with_answer_stub(monkeypatch)
+
+    at.chat_input[0].set_value("Wat is artikel 4a?").run()
+    assert not at.exception
+
+    chat_col = at.columns[0]
+    kinds = [getattr(c, "type", "") for c in chat_col.children.values()]
+    user_at = kinds.index("chat_message")
+    status_at = kinds.index("status")
+    answer_at = len(kinds) - 1 - kinds[::-1].index("chat_message")
+    assert user_at < status_at < answer_at
+
+    status = at.status[0]
+    assert status.label == strings.PROGRESS_LABEL
+    assert status.state == "complete"
+
+
 def test_first_load_without_backend(monkeypatch) -> None:
     stub = StubClient()
     stub.set_corpus_error(ConnectionError("unreachable"))
@@ -114,15 +175,11 @@ def test_clarify_flow_followup_sends_action(monkeypatch) -> None:
     assert "aanbieder" in blob.lower() or "gebruiksverantwoordelijke" in blob.lower()
 
     # Edit domain in the situation panel before the follow-up.
-    domain_inputs = [
-        ti
-        for ti in at.sidebar.text_input
-        if strings.DOMAIN_LABEL in str(getattr(ti, "label", ""))
-    ]
-    if domain_inputs:
-        domain_inputs[0].set_value("hr")
-        at.run()
-        assert not at.exception
+    domain_inputs = [ti for ti in at.text_input if ti.label == strings.DOMAIN_LABEL]
+    assert len(domain_inputs) == 1
+    domain_inputs[0].set_value("hr")
+    at.run()
+    assert not at.exception
 
     at.chat_input[0].set_value("Ik ben de aanbieder.").run()
     assert not at.exception
@@ -140,6 +197,4 @@ def test_clarify_flow_followup_sends_action(monkeypatch) -> None:
         "importer",
         "distributor",
     }
-    # Edited domain should be present when the widget edit succeeded.
-    if domain_inputs:
-        assert second["situation"]["domain"] == "hr"
+    assert second["situation"]["domain"] == "hr"
