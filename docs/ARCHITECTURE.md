@@ -471,10 +471,20 @@ All configuration is environment variables. `.env.example` holds the online defa
 | `SIMILARITY_THRESHOLD` | `0.5959` | Q09 falls below it; Q01–Q08 do not. |
 | `MAX_ADDED_PROVISIONS` | `1` | Longest `via_reference` list in the eval set. |
 | `SPLIT_TOKEN_LIMIT` | `30000` | |
-| `PROMPT_TOKEN_BUDGET` | per profile | Lower-ranked chunks are dropped above it. |
+| `PROMPT_TOKEN_BUDGET` | per profile | Lower-ranked chunks are dropped above it. Offline: derive from `LLM_MAX_MODEL_LEN` (about half); see `docs/OFFLINE.md`. |
 | `RETRIEVAL_HISTORY_TURNS` | `5` | Number of most recent user messages used to form the retrieval query. |
 | `LLM_TIMEOUT_SECONDS`, `LLM_MAX_RETRIES` | `120`, `1` | |
 | `SERVING_PROFILE` | `online` | Which serving profile to record in index_meta (`online` or `offline`). |
+
+Compose-only variables for the `offline` profile (interpolated by Compose into the vLLM `command`; **not** in `app/config.py`):
+
+| Variable | Example | Notes |
+|---|---|---|
+| `LLM_LOCAL_MODEL` | `Qwen/Qwen3.8-27B` | Hugging Face id for `vllm-llm --model`. |
+| `EMBEDDING_LOCAL_MODEL` | `Qwen/Qwen3-Embedding-8B` | Hugging Face id for `vllm-embed --model`. |
+| `LLM_MAX_MODEL_LEN` | `8192` | Passed as `--max-model-len` to `vllm-llm`. |
+| `VLLM_LLM_EXTRA_ARGS` | (empty) | Extra CLI args (quantization, tensor parallel, …). Empty optional args vanish because the command is string-form. |
+| `VLLM_EMBED_EXTRA_ARGS` | `--runner pooling` | Extra CLI args for the embedding server. |
 
 ## 11. Deployment
 
@@ -512,15 +522,30 @@ services:
     ports: ["8501:8501"]
   vllm-llm:
     profiles: [offline]
-    image: vllm/vllm-openai:<pinned tag>
-    command: ["--model", "${LLM_LOCAL_MODEL}", "--served-model-name", "${SELECTION_MODEL}",
-              "--max-model-len", "${LLM_MAX_MODEL_LEN}"]   # add quantization flags here
+    image: vllm/vllm-openai:v0.31.0
+    # String-form command so empty optional args vanish.
+    command: >-
+      --model ${LLM_LOCAL_MODEL}
+      --served-model-name ${SELECTION_MODEL}
+      --max-model-len ${LLM_MAX_MODEL_LEN}
+      ${VLLM_LLM_EXTRA_ARGS:-}
+    volumes: [hf-cache:/root/.cache/huggingface]
     deploy: { resources: { reservations: { devices: [{ driver: nvidia, count: all, capabilities: [gpu] }] } } }
+    healthcheck:
+      test: ["CMD-SHELL", "python3 -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')\""]
+      start_period: 600s
   vllm-embed:
     profiles: [offline]
-    image: vllm/vllm-openai:<pinned tag>
-    command: ["--model", "${EMBEDDING_LOCAL_MODEL}", "--served-model-name", "${EMBEDDING_MODEL}"]
+    image: vllm/vllm-openai:v0.31.0
+    command: >-
+      --model ${EMBEDDING_LOCAL_MODEL}
+      --served-model-name ${EMBEDDING_MODEL}
+      ${VLLM_EMBED_EXTRA_ARGS:-}
+    volumes: [hf-cache:/root/.cache/huggingface]
     deploy: { resources: { reservations: { devices: [{ driver: nvidia, count: all, capabilities: [gpu] }] } } }
+    healthcheck:
+      test: ["CMD-SHELL", "python3 -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')\""]
+      start_period: 600s
   db-test:
     profiles: [test]
     image: pgvector/pgvector:<pinned tag>
@@ -534,7 +559,7 @@ services:
     environment: { TEST_DATABASE_URL: "postgresql://app:test@db-test:5432/test" }
     depends_on: { db-test: { condition: service_healthy } }
     volumes: ["./backend:/app", "./postgres:/app/postgres:ro", "./corpus:/app/corpus:ro"]
-volumes: { pgdata: {} }
+volumes: { pgdata: {}, hf-cache: {} }
 ```
 
 ### Makefile
@@ -562,9 +587,9 @@ The Makefile in the repository root holds the common operations. Each target is 
 | `make eval` | Run the retrieval evaluation against the current index. |
 | `make lint`, `make fmt` | Check or apply `ruff` formatting and lint rules. |
 
-**Offline notes:**
+**Offline notes:** see `docs/OFFLINE.md` (hardware, quantization, maximum context length, `--served-model-name` alignment, pinned image tag, and verified/unverified flags). Summary:
 
-- Quantization and maximum context length are vLLM arguments supplied through environment variables, and the user chooses them for their hardware. The README documents the trade-offs.
+- Quantization and maximum context length are vLLM arguments supplied through compose-only environment variables (`VLLM_*_EXTRA_ARGS`, `LLM_MAX_MODEL_LEN`).
 - vLLM flags for embedding models, and for reduced (Matryoshka) output dimensions, differ between versions. Pin the version and verify the flags. The embedding dimension test catches a misconfiguration.
 - An index is built and queried with the same serving setup. Switching profile means running ingestion again.
 

@@ -108,6 +108,7 @@ def test_render_notes_covers_every_check() -> None:
     assert "## 7. Routing" in notes
     assert "## Decisions for T8" in notes
     assert f"MAX_HTTP_CALLS = {MAX_HTTP_CALLS}" in notes
+    assert "docs/OFFLINE.md" in notes
 
 
 @pytest.mark.unit

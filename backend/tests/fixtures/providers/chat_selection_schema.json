@@ -1,9 +1,9 @@
 {
-  "id": "gen-1791501411-bd1t8COHHXQpAZ37lEq2",
+  "id": "gen-1791535651-ZBkLe5EzqtxWArhv2RkB",
   "object": "chat.completion",
-  "created": 1791501411,
+  "created": 1791535651,
   "model": "qwen/qwen3.8-27b",
-  "provider": "Phala",
+  "provider": "AkashML",
   "system_fingerprint": null,
   "service_tier": null,
   "choices": [
@@ -16,11 +16,11 @@
         "role": "assistant",
         "content": "{\n  \"keep\": [\"AI-verordening:art_3\"],\n  \"discard\": [\"AI-verordening:art_50\"],\n  \"request\": [],\n  \"external_references\": []\n}",
         "refusal": null,
-        "reasoning": "We need answer user's request. User says \"Return JSON only. keep=['AI-verordening:art_3'], discard=['AI-verordening:art_50'], request=[], external_references=[].\"\n\nNeed output JSON only. Schema exactly? It says JSON that matches schema exactly, but no explicit schema. Likely expected output has fields keep, discard, request, external_references. We should return exactly those values as JSON array? The input is already JSON-like but maybe they want a JSON object with those keys. \"Return JSON only. keep=['AI-verordening:art_3'], discard=['AI-verordening:art_50'], request=[], external_references=[].\" This suggests produce JSON with keep, discard, request, external_references arrays. Use double quotes, valid JSON.\n\nNeed ensure no extra text. final JSON.\nNeed consider if lists values should be strings. Yes.\n\nPotential schema could be {\"keep\": [...], \"discard\": [...], \"request\": [], \"external_references\": []}. We'll output. Ensure no code block.\n",
+        "reasoning": "We need respond to user: \"Return JSON only. keep=['AI-verordening:art_3'], discard=['AI-verordening:art_50'], request=[], external_references=[].\"\nNeed output JSON only. Need infer expected JSON structure? User says return JSON only with fields? Likely they want an object with keep, discard, request, external_references arrays as provided. Need ensure valid JSON only. Could be exactly those keys. Need no markdown.\nNeed maybe schema? \"matches schema exactly\" from system but schema not given. User specified values. So output {\"keep\":[\"AI-verordening:art_3\"],\"discard\":[\"AI-verordening:art_50\"],\"request\":[],\"external_references\":[]}\nEnsure JSON only.\n",
         "reasoning_details": [
           {
             "type": "reasoning.text",
-            "text": "We need answer user's request. User says \"Return JSON only. keep=['AI-verordening:art_3'], discard=['AI-verordening:art_50'], request=[], external_references=[].\"\n\nNeed output JSON only. Schema exactly? It says JSON that matches schema exactly, but no explicit schema. Likely expected output has fields keep, discard, request, external_references. We should return exactly those values as JSON array? The input is already JSON-like but maybe they want a JSON object with those keys. \"Return JSON only. keep=['AI-verordening:art_3'], discard=['AI-verordening:art_50'], request=[], external_references=[].\" This suggests produce JSON with keep, discard, request, external_references arrays. Use double quotes, valid JSON.\n\nNeed ensure no extra text. final JSON.\nNeed consider if lists values should be strings. Yes.\n\nPotential schema could be {\"keep\": [...], \"discard\": [...], \"request\": [], \"external_references\": []}. We'll output. Ensure no code block.\n",
+            "text": "We need respond to user: \"Return JSON only. keep=['AI-verordening:art_3'], discard=['AI-verordening:art_50'], request=[], external_references=[].\"\nNeed output JSON only. Need infer expected JSON structure? User says return JSON only with fields? Likely they want an object with keep, discard, request, external_references arrays as provided. Need ensure valid JSON only. Could be exactly those keys. Need no markdown.\nNeed maybe schema? \"matches schema exactly\" from system but schema not given. User specified values. So output {\"keep\":[\"AI-verordening:art_3\"],\"discard\":[\"AI-verordening:art_50\"],\"request\":[],\"external_references\":[]}\nEnsure JSON only.\n",
             "format": "unknown",
             "index": 0
           }
@@ -29,24 +29,24 @@
     }
   ],
   "usage": {
-    "prompt_tokens": 163,
-    "completion_tokens": 268,
-    "total_tokens": 431,
-    "cost": 0.00051975,
+    "prompt_tokens": 95,
+    "completion_tokens": 203,
+    "total_tokens": 298,
+    "cost": 0.000423315,
     "is_byok": false,
     "prompt_tokens_details": {
-      "cached_tokens": 64,
+      "cached_tokens": 0,
       "cache_write_tokens": 0,
       "audio_tokens": 0,
       "video_tokens": 0
     },
     "cost_details": {
-      "upstream_inference_cost": 0.00051975,
-      "upstream_inference_prompt_cost": 1.725e-05,
-      "upstream_inference_completions_cost": 0.0005025
+      "upstream_inference_cost": 0.000423315,
+      "upstream_inference_prompt_cost": 2.1375e-05,
+      "upstream_inference_completions_cost": 0.00040194
     },
     "completion_tokens_details": {
-      "reasoning_tokens": 220,
+      "reasoning_tokens": 154,
       "image_tokens": 0,
       "audio_tokens": 0
     }

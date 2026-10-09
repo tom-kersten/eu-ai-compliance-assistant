@@ -31,17 +31,13 @@ Quickstart (online)
 
 Quickstart (offline)
 
-The offline profile uses self-hosted vLLM services and is not verified in this
-repository. Copy and edit the offline env:
+Self-hosted vLLM. Hardware, quantization, and verified flags: docs/OFFLINE.md.
 
    cp .env.offline.example .env.offline
    # edit .env.offline to match your hardware and models
-
-Then start:
-
    make up-offline
-
-Note: running offline requires suitable GPU hardware and is covered in T20.
+   make ingest ENV_FILE=.env.offline
+   make test-live ENV_FILE=.env.offline
 
 Architecture
 

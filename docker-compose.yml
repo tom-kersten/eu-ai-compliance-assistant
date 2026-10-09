@@ -50,6 +50,65 @@ services:
     ports:
       - "8501:8501"
 
+  vllm-llm:
+    profiles: [offline]
+    image: vllm/vllm-openai:v0.31.0
+    command: >-
+      --model ${LLM_LOCAL_MODEL}
+      --served-model-name ${SELECTION_MODEL}
+      --max-model-len ${LLM_MAX_MODEL_LEN}
+      ${VLLM_LLM_EXTRA_ARGS:-}
+    environment:
+      HF_HOME: /root/.cache/huggingface
+    volumes:
+      - hf-cache:/root/.cache/huggingface
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "python3 -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')\"",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 600s
+
+  vllm-embed:
+    profiles: [offline]
+    image: vllm/vllm-openai:v0.31.0
+    command: >-
+      --model ${EMBEDDING_LOCAL_MODEL}
+      --served-model-name ${EMBEDDING_MODEL}
+      ${VLLM_EMBED_EXTRA_ARGS:-}
+    environment:
+      HF_HOME: /root/.cache/huggingface
+    volumes:
+      - hf-cache:/root/.cache/huggingface
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "python3 -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')\"",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 600s
+
   db-test:
     profiles: [test]
     image: pgvector/pgvector:0.8.6-pg17
@@ -82,6 +141,10 @@ services:
       - ./corpus:/app/corpus:ro
       - ./.env.example:/env/.env.example:ro
       - ./.env.offline.example:/env/.env.offline.example:ro
+      - ./docker-compose.yml:/repo/docker-compose.yml:ro
+      - ./Makefile:/repo/Makefile:ro
+      - ./docs/OFFLINE.md:/repo/docs/OFFLINE.md:ro
+      - ./README.md:/repo/README.md:ro
     working_dir: /app
 
   frontend-test:
@@ -97,3 +160,4 @@ services:
 
 volumes:
   pgdata: {}
+  hf-cache: {}

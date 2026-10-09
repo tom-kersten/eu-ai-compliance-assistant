@@ -96,6 +96,9 @@ def render_notes(report: VerificationReport) -> str:
         "Verified request and response shapes for OpenRouter, recorded by",
         "`make verify-providers`. Keys are never written here.",
         "",
+        "Self-hosted (vLLM) image pins, quantization, and context-length notes:",
+        "`docs/OFFLINE.md`.",
+        "",
         f"HTTP call cap for the verification script: `MAX_HTTP_CALLS = "
         f"{report.max_http_calls}` "
         f"(this run used {report.calls_used}).",

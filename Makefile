@@ -22,9 +22,9 @@ up: ## Start the online stack: db, migrate, backend, frontend
 	@test -f .env || { echo "Missing .env. Copy .env.example to .env and fill secrets."; exit 1; }
 	ENV_FILE=.env $(COMPOSE) --env-file .env up -d --build db migrate backend frontend
 
-up-offline: ## Start the stack using .env.offline (vLLM services come in T20)
+up-offline: ## Start the online stack plus vLLM services, using .env.offline
 	@test -f .env.offline || { echo "Missing .env.offline. Copy .env.offline.example to .env.offline."; exit 1; }
-	ENV_FILE=.env.offline $(COMPOSE) --env-file .env.offline up -d --build db migrate backend frontend
+	ENV_FILE=.env.offline $(COMPOSE) --env-file .env.offline --profile offline up -d --build db migrate backend frontend vllm-llm vllm-embed
 
 down: ## Stop all services
 	$(COMPOSE) --profile test --profile offline down
@@ -50,12 +50,12 @@ new-migration: ## Create the next numbered migration file in postgres/migrations
 		python -m app.store.migrate new-migration "$(name)" --directory /migrations
 
 ingest: ## Run ingestion into the migrated database
-	@test -f .env || { echo "Missing .env. Copy .env.example to .env."; exit 1; }
-	ENV_FILE=.env $(COMPOSE) --env-file .env run --rm backend ingest
+	@test -f $(ENV_FILE) || { echo "Missing $(ENV_FILE). Copy the matching .env*.example and fill secrets."; exit 1; }
+	ENV_FILE=$(ENV_FILE) $(COMPOSE) --env-file $(ENV_FILE) run --rm backend ingest
 
 ingest-reset: ## Clear existing provisions, then run ingestion
-	@test -f .env || { echo "Missing .env. Copy .env.example to .env."; exit 1; }
-	ENV_FILE=.env $(COMPOSE) --env-file .env run --rm backend ingest --reset
+	@test -f $(ENV_FILE) || { echo "Missing $(ENV_FILE). Copy the matching .env*.example and fill secrets."; exit 1; }
+	ENV_FILE=$(ENV_FILE) $(COMPOSE) --env-file $(ENV_FILE) run --rm backend ingest --reset
 
 psql: ## Open a psql shell in the database
 	@test -f .env || { echo "Missing .env. Copy .env.example to .env."; exit 1; }
@@ -81,8 +81,8 @@ test-frontend: ## Run the frontend suite
 	$(COMPOSE) $(PROFILE_TEST) run --rm frontend-test pytest
 
 test-live: ## Run the opt-in suite against real providers
-	@test -f .env || { echo "Missing .env. Copy .env.example to .env and fill secrets."; exit 1; }
-	set -a; . ./.env; set +a; \
+	@test -f $(ENV_FILE) || { echo "Missing $(ENV_FILE). Copy the matching .env*.example and fill secrets."; exit 1; }
+	set -a; . ./$(ENV_FILE); set +a; \
 	$(COMPOSE) $(PROFILE_TEST) run --rm \
 		-e LLM_API_KEY -e EMBEDDING_API_KEY \
 		-e LLM_BASE_URL -e EMBEDDING_BASE_URL \
@@ -90,7 +90,7 @@ test-live: ## Run the opt-in suite against real providers
 		-e EMBEDDING_DIMENSIONS -e LLM_TIMEOUT_SECONDS \
 		-e ANSWER_REASONING_EFFORT -e SELECTION_REASONING_EFFORT \
 		-e SIMILARITY_THRESHOLD -e MAX_ADDED_PROVISIONS -e RETRIEVAL_TOP_K \
-		-e LLM_MAX_RETRIES \
+		-e LLM_MAX_RETRIES -e SERVING_PROFILE \
 		backend-test \
 		pytest -m live -o addopts=
 

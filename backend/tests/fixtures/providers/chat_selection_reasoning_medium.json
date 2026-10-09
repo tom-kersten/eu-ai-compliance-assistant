@@ -1,9 +1,9 @@
 {
-  "id": "gen-1791501869-Rmapv5PiPfmgKupIf4Mo",
+  "id": "gen-1791536006-r04WLYLUEpPM0DGSdvY8",
   "object": "chat.completion",
-  "created": 1791501869,
+  "created": 1791536006,
   "model": "qwen/qwen3.8-27b",
-  "provider": "Phala",
+  "provider": "Ionstream",
   "system_fingerprint": null,
   "service_tier": null,
   "choices": [
@@ -14,13 +14,13 @@
       "native_finish_reason": "stop",
       "message": {
         "role": "assistant",
-        "content": "{\n  \"keep\": [\n    \"AI-verordening:art_3\"\n  ],\n  \"discard\": [\n    \"AI-verordening:art_50\"\n  ],\n  \"request\": [],\n  \"external_references\": []\n}",
+        "content": "{\n  \"keep\": [\"AI-verordening:art_3\"],\n  \"discard\": [\"AI-verordening:art_50\"],\n  \"request\": [],\n  \"external_references\": []\n}",
         "refusal": null,
-        "reasoning": "We need answer user's request. User: \"Return JSON only. keep=['AI-verordening:art_3'], discard=['AI-verordening:art_50'], request=[], external_references=[].\"\nWe need output JSON only matching schema exactly. But schema not provided? Need infer likely simple object with keys keep, discard, request, external_references. They ask return JSON only and gave arrays. We should output those exactly. Need maybe no markdown. Need JSON valid. Could be {\"keep\":[\"AI-verordening:art_3\"],\"discard\":[\"AI-verordening:art_50\"],\"request\":[],\"external_references\":[]}. Need ensure only JSON. Final only JSON.\n",
+        "reasoning": "The user wants me to return a JSON object that matches a specific schema. They've provided:\n- keep=['AI-verordening:art_3']\n- discard=['AI-verordening:art_50']\n- request=[]\n- external_references=[]\n\nI need to return JSON that matches this structure exactly. Let me format this as a clean JSON object.\n",
         "reasoning_details": [
           {
             "type": "reasoning.text",
-            "text": "We need answer user's request. User: \"Return JSON only. keep=['AI-verordening:art_3'], discard=['AI-verordening:art_50'], request=[], external_references=[].\"\nWe need output JSON only matching schema exactly. But schema not provided? Need infer likely simple object with keys keep, discard, request, external_references. They ask return JSON only and gave arrays. We should output those exactly. Need maybe no markdown. Need JSON valid. Could be {\"keep\":[\"AI-verordening:art_3\"],\"discard\":[\"AI-verordening:art_50\"],\"request\":[],\"external_references\":[]}. Need ensure only JSON. Final only JSON.\n",
+            "text": "The user wants me to return a JSON object that matches a specific schema. They've provided:\n- keep=['AI-verordening:art_3']\n- discard=['AI-verordening:art_50']\n- request=[]\n- external_references=[]\n\nI need to return JSON that matches this structure exactly. Let me format this as a clean JSON object.\n",
             "format": "unknown",
             "index": 0
           }
@@ -29,10 +29,10 @@
     }
   ],
   "usage": {
-    "prompt_tokens": 93,
-    "completion_tokens": 203,
-    "total_tokens": 296,
-    "cost": 0.000394575,
+    "prompt_tokens": 57,
+    "completion_tokens": 127,
+    "total_tokens": 184,
+    "cost": 0.0003035401,
     "is_byok": false,
     "prompt_tokens_details": {
       "cached_tokens": 0,
@@ -41,12 +41,12 @@
       "video_tokens": 0
     },
     "cost_details": {
-      "upstream_inference_cost": 0.000394575,
-      "upstream_inference_prompt_cost": 1.395e-05,
-      "upstream_inference_completions_cost": 0.000380625
+      "upstream_inference_cost": 0.0003035401,
+      "upstream_inference_prompt_cost": 5.0901e-06,
+      "upstream_inference_completions_cost": 0.00029845
     },
     "completion_tokens_details": {
-      "reasoning_tokens": 143,
+      "reasoning_tokens": 79,
       "image_tokens": 0,
       "audio_tokens": 0
     }
