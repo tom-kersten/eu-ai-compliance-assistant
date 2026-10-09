@@ -38,15 +38,8 @@ def validate_selection(result: SelectionResult, retrieved_refs: Sequence[str]) -
 async def select(
     llm, messages: Iterable[Message], *, reasoning_effort: str | None
 ) -> SelectionResult:
-    # send messages as dicts
     msg_dicts = [m.model_dump() for m in messages]
-    effort_payload = (
-        {"effort": reasoning_effort, "exclude": False}
-        if reasoning_effort is not None
-        else None
-    )
     res = await llm.respond(
-        messages=msg_dicts, schema=SelectionResult, reasoning=effort_payload
+        messages=msg_dicts, schema=SelectionResult, reasoning_effort=reasoning_effort
     )
-    # Validate and return
     return SelectionResult.model_validate(res)

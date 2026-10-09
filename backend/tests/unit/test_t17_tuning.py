@@ -6,6 +6,8 @@ import json
 from pathlib import Path
 
 import pytest
+from pydantic import BaseModel, ConfigDict
+
 from eval.reliability import (
     chat_request,
     message_content,
@@ -27,7 +29,6 @@ from eval.tuning import (
     suggest_threshold,
     vector_hit,
 )
-from pydantic import BaseModel, ConfigDict
 
 
 def _questions() -> list[dict]:

@@ -18,14 +18,6 @@ from pathlib import Path
 from typing import Any
 
 import httpx
-from eval.metrics import score_question
-from eval.reliability import (
-    ANSWER_SCHEMA,
-    SELECTION_SCHEMA,
-    chat_request,
-    message_content,
-)
-from eval.tuning import embedding_text, rank_similarities, retrieved_refs
 from pydantic import BaseModel, ValidationError
 
 from app.errors import AnswerInvalid, SelectionInvalid
@@ -41,6 +33,14 @@ from app.pipeline.resolve import resolve
 from app.pipeline.select import select, validate_selection
 from app.schemas.domain import Provision
 from app.schemas.llm import AnswerResult, Message, SelectionResult, Situation
+from eval.metrics import score_question
+from eval.reliability import (
+    ANSWER_SCHEMA,
+    SELECTION_SCHEMA,
+    chat_request,
+    message_content,
+)
+from eval.tuning import embedding_text, rank_similarities, retrieved_refs
 
 QUERY_PREFIX = (
     "Instruct: Given a web search query, retrieve relevant passages "
@@ -179,7 +179,7 @@ class ChatCompletionsLLM:
         prompt: str | None = None,
         messages: list[dict] | None = None,
         schema: type[BaseModel] | None = None,
-        reasoning: dict | None = None,
+        reasoning_effort: str | None = None,
     ) -> dict:
         if schema is SelectionResult:
             model = self._selection_model
@@ -202,16 +202,12 @@ class ChatCompletionsLLM:
         else:
             raise ValueError("messages or prompt is required")
 
-        effort: str | None = None
-        if isinstance(reasoning, dict):
-            effort = reasoning.get("effort")
-
         body = chat_request(
             model=model,
             schema_name=schema_name,
             schema=schema_dict,
             messages=clean_messages,
-            reasoning_effort=effort,
+            reasoning_effort=reasoning_effort,
             max_tokens=8192,
         )
         self.calls += 1

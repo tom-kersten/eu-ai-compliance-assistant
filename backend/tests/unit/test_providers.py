@@ -29,14 +29,15 @@ async def test_fake_embedder_is_deterministic_and_dimension() -> None:
 @pytest.mark.unit
 def test_scripted_llm_queue_behaviour() -> None:
     s = ScriptedLLM(responses=[{"result": "one"}, {"result": "two"}])
+    msgs = [{"role": "user", "content": "x"}]
 
     async def run():
-        r1 = await s.respond(prompt="x")
-        r2 = await s.respond(prompt="y")
+        r1 = await s.respond(messages=msgs)
+        r2 = await s.respond(messages=msgs)
         assert r1 == {"result": "one"}
         assert r2 == {"result": "two"}
         with pytest.raises(RuntimeError):
-            await s.respond(prompt="z")
+            await s.respond(messages=msgs)
 
     asyncio.run(run())
 
@@ -76,7 +77,6 @@ async def test_openrouter_llm_includes_response_format_and_reasoning_and_retries
 ) -> None:
     settings = Settings()
     settings.selection_model = "sel-model"
-    settings.answer_reasoning_effort = "medium"
     settings.llm_max_retries = 2
 
     calls = []
@@ -106,11 +106,15 @@ async def test_openrouter_llm_includes_response_format_and_reasoning_and_retries
     monkeypatch.setattr(asyncio, "sleep", noop_sleep)
 
     data = await adapter.respond(
-        messages=[{"role": "user", "content": "hello"}], schema=None
+        messages=[{"role": "user", "content": "hello"}],
+        schema=None,
+        reasoning_effort="medium",
     )
     assert data["result"] == "ok"
-    # ensure reasoning present and response_format (in second call too)
-    assert any("reasoning" in call for call in calls)
+    assert len(calls) == 2
+    # The adapter maps the effort level to OpenRouter's verified format.
+    for call in calls:
+        assert call["reasoning"] == {"effort": "medium", "exclude": False}
     await client.aclose()
 
 
@@ -152,9 +156,10 @@ async def test_openrouter_llm_uses_the_model_for_the_calling_step() -> None:
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_openrouter_llm_omits_reasoning_when_caller_disables_it() -> None:
+async def test_openrouter_llm_omits_reasoning_when_effort_is_off() -> None:
     settings = Settings()
     settings.answer_reasoning_effort = "medium"
+    settings.selection_reasoning_effort = "low"
     captured: list[dict] = []
 
     async def handler(request: httpx.Request) -> httpx.Response:
@@ -173,7 +178,10 @@ async def test_openrouter_llm_omits_reasoning_when_caller_disables_it() -> None:
     adapter.client = client
 
     await adapter.respond(
-        messages=[{"role": "user", "content": "hello"}], reasoning=None
+        messages=[{"role": "user", "content": "hello"}], reasoning_effort=None
     )
+    # Settings must not leak in as a default; None means reasoning is off.
+    await adapter.respond(messages=[{"role": "user", "content": "hello"}])
     assert "reasoning" not in captured[0]
+    assert "reasoning" not in captured[1]
     await client.aclose()

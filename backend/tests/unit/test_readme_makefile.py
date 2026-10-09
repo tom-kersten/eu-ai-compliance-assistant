@@ -25,8 +25,6 @@ def parse_make_targets(makefile_text: str) -> set[str]:
 
 
 def test_readme_and_makefile_targets():
-    # Mounted read-only by docker-compose.yml's backend-test service (added in
-    # T20), alongside docker-compose.yml and docs/OFFLINE.md.
     root = Path("/repo")
     makefile = root / "Makefile"
     assert makefile.exists(), "Makefile not mounted into backend-test at /repo"
@@ -34,8 +32,6 @@ def test_readme_and_makefile_targets():
     targets = parse_make_targets(make_text)
 
     readme = root / "README.md"
-    # The test is intentionally written to fail if README.md is missing,
-    # per the task plan: write the test first, see it fail, then create README.
     assert readme.exists(), "README.md is required for the assessor-facing docs"
     content = readme.read_text(encoding="utf8")
 

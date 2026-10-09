@@ -16,6 +16,16 @@ from pathlib import Path
 from typing import Any
 
 import httpx
+from pydantic import ValidationError
+
+from app.errors import SelectionInvalid
+from app.ingestion.chunker import chunk_indexed
+from app.ingestion.manifest import load_indexed_provisions, load_manifest
+from app.pipeline.prompts.selection import build_selection_prompt
+from app.pipeline.resolve import resolve
+from app.pipeline.select import validate_selection
+from app.schemas.domain import Provision
+from app.schemas.llm import Message, SelectionResult, Situation
 from eval.reliability import (
     SELECTION_SCHEMA,
     chat_request,
@@ -37,16 +47,6 @@ from eval.tuning import (
     suggest_threshold,
     vector_hit,
 )
-from pydantic import ValidationError
-
-from app.errors import SelectionInvalid
-from app.ingestion.chunker import chunk_indexed
-from app.ingestion.manifest import load_indexed_provisions, load_manifest
-from app.pipeline.prompts.selection import build_selection_prompt
-from app.pipeline.resolve import resolve
-from app.pipeline.select import validate_selection
-from app.schemas.domain import Provision
-from app.schemas.llm import Message, SelectionResult, Situation
 
 QUERY_PREFIX = (
     "Instruct: Given a web search query, retrieve relevant passages "

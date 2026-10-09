@@ -26,7 +26,7 @@ If a document is ambiguous, or the implementation needs to differ from it, stop 
 - A chunk is one article, annex, or recital. Split only above 30,000 tokens, evenly at paragraph boundaries.
 - Retrieval: top 10 above a similarity threshold, whole provisions only. Then one LLM selection call, exact lookup of referenced provisions, and one LLM answer call. Never more than two LLM calls per question.
 - The backend is stateless. Session state lives in Streamlit. Progress is streamed to the UI as Server-Sent Events.
-- LLM calls use the plain OpenAI SDK behind our own Protocols. No LangChain, LlamaIndex, or similar frameworks.
+- LLM and embedding calls use plain `httpx` against OpenAI-compatible endpoints, behind our own Protocols. No LangChain, LlamaIndex, or similar frameworks.
 - Dutch only: corpus, interface, answers. Prompts are written in English and instruct Dutch output.
 - The evaluation set is single-turn.
 
@@ -52,6 +52,8 @@ Run `make help` for the full list.
 | `make test-live` | Opt-in tests against real providers |
 | `make eval` | Retrieval evaluation |
 | `make lint`, `make fmt` | ruff |
+
+CI (`.github/workflows/ci.yml`) runs `make build`, `make lint`, `make test`, and `make test-frontend` on every push and pull request. A change is not done until CI is green.
 
 ## Workflow
 

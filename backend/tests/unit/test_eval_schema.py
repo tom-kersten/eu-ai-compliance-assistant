@@ -1,7 +1,11 @@
 import json
 from pathlib import Path
 
+import pytest
+
 from eval.models import EvalFile
+
+pytestmark = pytest.mark.unit
 
 
 def test_eval_file_validates():

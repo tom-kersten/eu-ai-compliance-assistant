@@ -1,6 +1,10 @@
-from datetime import datetime
+from datetime import UTC, datetime
+
+import pytest
 
 from eval.models import EvalReport, EvalReportItem
+
+pytestmark = pytest.mark.unit
 
 
 def test_report_roundtrip_json(tmp_path):
@@ -20,7 +24,7 @@ def test_report_roundtrip_json(tmp_path):
         )
     ]
     report = EvalReport(
-        generated_at=datetime.utcnow(),
+        generated_at=datetime.now(UTC),
         items=items,
         summary={"total": 1},
     )

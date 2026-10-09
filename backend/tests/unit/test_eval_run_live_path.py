@@ -6,6 +6,8 @@ import json
 
 import pytest
 
+pytestmark = pytest.mark.unit
+
 
 def test_missing_config_raises(monkeypatch, tmp_path):
     eval_file = tmp_path / "eval.json"

@@ -36,13 +36,8 @@ async def answer(
         snapshot,
     )
     msg_dicts = [m.model_dump() for m in msgs]
-    effort_payload = (
-        {"effort": reasoning_effort, "exclude": False}
-        if reasoning_effort is not None
-        else None
-    )
     res = await llm.respond(
-        messages=msg_dicts, schema=AnswerResult, reasoning=effort_payload
+        messages=msg_dicts, schema=AnswerResult, reasoning_effort=reasoning_effort
     )
     # pydantic will raise ValidationError on shape errors
     out = AnswerResult.model_validate(res)

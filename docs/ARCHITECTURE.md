@@ -88,12 +88,13 @@ There is no `backend/src/eval` copy. Tests and `make eval` import the root `eval
 | Configuration | `pydantic-settings`, environment variables, `.env.example`. |
 | Database access | `psycopg` 3, `pgvector-python`, plain SQL. No ORM. |
 | Schema management | Plain SQL migrations in `postgres/migrations/`, applied by a small runner in the backend. Forward-only. |
-| LLM and embedding clients | OpenAI Python SDK against OpenAI-compatible endpoints. |
+| LLM and embedding clients | `httpx` against OpenAI-compatible endpoints. One adapter serves OpenRouter and vLLM. |
 | HTML parsing | BeautifulSoup with lxml. |
 | Frontend HTTP | `httpx` with streaming. |
-| Testing | `pytest`, `pytest-asyncio`, `respx`, a throwaway pgvector container (`db-test`) for database tests. |
+| Testing | `pytest`, `pytest-asyncio`, `httpx.MockTransport` for HTTP adapter tests, a throwaway pgvector container (`db-test`) for database tests. |
 | Linting and formatting | `ruff`. |
 | Task runner | `make`, as a thin wrapper around `docker compose` and `pytest` in containers. |
+| Continuous integration | GitHub Actions (`.github/workflows/ci.yml`) on every push and pull request: validates the compose file for both profiles, builds the runtime images, and runs `make lint`, `make test`, and `make test-frontend`. Needs no keys or GPUs. `make test-live` and `make eval` stay manual because they call paid providers. |
 
 ## 5. Data model
 
@@ -290,20 +291,23 @@ The resulting corpus is 359 provisions.
 ### Provider interfaces
 
 ```python
-class EmbeddingClient(Protocol):
+class Embedder(Protocol):
     model: str
     dimensions: int
-    async def embed_documents(self, texts: list[str]) -> list[list[float]]: ...
+    async def embed_documents(self, texts: Sequence[str]) -> list[list[float]]: ...
     async def embed_query(self, text: str) -> list[float]: ...   # applies the task instruction
 
-class LLMClient(Protocol):
-    async def complete(self, *, step: str, messages: list[Message],
-                       schema: type[T]) -> LLMResult[T]: ...     # validated Pydantic object + usage
+class LLM(Protocol):
+    async def respond(self, *, messages: Sequence[dict],
+                      schema: type[BaseModel] | None = None,
+                      reasoning_effort: str | None = None) -> dict: ...  # parsed content plus "usage"
 ```
 
-- `OpenAICompatibleEmbeddings` sends the `dimensions` parameter and verifies the length of what comes back. `embed_query` prefixes the model's task instruction, `embed_documents` does not.
-- `OpenAICompatibleLLM` requests JSON-schema structured output, validates with Pydantic, and retries up to `LLM_MAX_RETRIES` on invalid output. The live reliability run kept that budget at 1 (`docs/EVAL_RESULTS.md`).
-- **Reasoning is a per-step setting.** `ANSWER_REASONING_EFFORT` is `medium`, and `SELECTION_REASONING_EFFORT` is a separate setting. The pipeline only sees the effort level. The adapter translates it into the provider's request format: OpenRouter's reasoning parameter for the hosted endpoint, and the model's chat-template option for vLLM. The exact mappings are to be verified per provider. Reasoning content returned by the model is neither shown nor stored, only the final content is parsed, and reasoning tokens are counted in `usage`.
+- `OpenRouterAdapter` (`providers/openai_compat.py`) implements both Protocols with one `httpx.AsyncClient`.
+- Embeddings: sends `dimensions` from configuration and verifies the length of every returned vector. `embed_query` prefixes the model's task instruction, `embed_documents` does not.
+- LLM: posts to `/chat/completions` with JSON-schema structured output (`response_format` of type `json_schema`), parses `choices[0].message.content`, and returns it as a dict with the provider's `usage` attached. The schema also selects the model: `SelectionResult` uses `SELECTION_MODEL`, `AnswerResult` uses `ANSWER_MODEL`. It retries 429, 5xx, timeouts, and unparseable content up to `LLM_MAX_RETRIES`, with backoff.
+- The pipeline steps validate the returned dict against the Pydantic model, and the orchestrator retries a step whose output fails validation, within the same `LLM_MAX_RETRIES` budget. The live reliability run kept that budget at 1 (`docs/EVAL_RESULTS.md`).
+- **Reasoning is a per-step setting.** `ANSWER_REASONING_EFFORT` is `medium`, and `SELECTION_REASONING_EFFORT` is a separate setting. The pipeline only sees the effort level (`reasoning_effort`); an empty value turns reasoning off. The adapter translates it into the provider's request format in one function, `openrouter_reasoning_params()`, which produces OpenRouter's verified `reasoning` parameter. The vLLM mapping (the model's chat-template option) is not verified yet, so the offline profile currently sends the OpenRouter format too; adding it means adding one mapping function. Reasoning content returned by the model is neither shown nor stored, only the final content is parsed, and reasoning tokens are counted in `usage`.
 - `fakes.py` provides a deterministic fake embedder and a scripted fake LLM that returns queued responses, so pipeline tests need no network.
 
 ### Pipeline

@@ -54,10 +54,9 @@ class ScriptedLLM(LLM):
     async def respond(
         self,
         *,
-        prompt: str | None = None,
-        messages: Sequence[dict] | None = None,
-        schema: BaseModel | None = None,
-        reasoning: dict | None = None,
+        messages: Sequence[dict],
+        schema: type[BaseModel] | None = None,
+        reasoning_effort: str | None = None,
     ) -> dict:
         await asyncio.sleep(0)  # keep async signature
         if not self._queue:
@@ -69,5 +68,5 @@ class ScriptedLLM(LLM):
         if schema is not None:
             payload = dict(result)
             payload.pop("usage", None)
-            schema.parse_obj(payload)
+            schema.model_validate(payload)
         return result

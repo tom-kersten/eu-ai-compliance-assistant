@@ -6,17 +6,19 @@ from app.errors import AnswerInvalid
 from app.pipeline.answer import answer
 from app.schemas.llm import AnswerResult, Message, Situation
 
+pytestmark = pytest.mark.unit
+
 
 class DummyLLM:
     def __init__(self, response):
         self.response = response
         self.last_kwargs = None
 
-    async def respond(self, *, messages=None, schema=None, reasoning=None):
+    async def respond(self, *, messages=None, schema=None, reasoning_effort=None):
         self.last_kwargs = {
             "messages": messages,
             "schema": schema,
-            "reasoning": reasoning,
+            "reasoning_effort": reasoning_effort,
         }
         return self.response
 
@@ -56,10 +58,10 @@ def test_answer_step_valid_and_validation():
         )
         return out
 
-    res = asyncio.get_event_loop().run_until_complete(run())
+    res = asyncio.run(run())
     assert isinstance(res, AnswerResult)
-    # reasoning payload passed through
-    assert llm.last_kwargs["reasoning"] == {"effort": "medium", "exclude": False}
+    # The step passes only the effort level; the adapter owns the request format.
+    assert llm.last_kwargs["reasoning_effort"] == "medium"
 
     # bad citation -> AnswerInvalid
     bad_payload = make_answer_payload(action="answer", citations=["DOC:art_99"])
@@ -78,4 +80,4 @@ def test_answer_step_valid_and_validation():
         )
 
     with pytest.raises(AnswerInvalid):
-        asyncio.get_event_loop().run_until_complete(run2())
+        asyncio.run(run2())

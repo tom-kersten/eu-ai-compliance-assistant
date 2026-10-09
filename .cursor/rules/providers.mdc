@@ -6,13 +6,13 @@ alwaysApply: false
 
 # Provider rules
 
-- Protocols live in `base.py`. Implementations use the OpenAI Python SDK (`AsyncOpenAI` with a configurable `base_url`) against OpenAI-compatible endpoints. The same code serves OpenRouter and vLLM. Fakes live in `fakes.py`.
+- Protocols live in `base.py`. The implementation (`openai_compat.py`) uses plain `httpx` against OpenAI-compatible endpoints, with a configurable base URL. No provider SDKs. The same code serves OpenRouter and vLLM. Fakes live in `fakes.py`.
 - **Embeddings:**
   - Send `dimensions` from configuration and verify that every returned vector has that length. Raise a clear error otherwise.
   - `embed_query` applies the model's task instruction. `embed_documents` does not.
   - Batch size is configurable.
 - **LLM:**
-  - Request JSON-schema structured output and validate with the Pydantic model. Return the validated object together with usage, including reasoning tokens.
+  - Request JSON-schema structured output, parse only `message.content`, and return it as a dict with the provider's `usage` attached (including reasoning tokens). The pipeline step validates that dict with the Pydantic model.
   - Reasoning effort is a per-step setting. The mapping from effort to each provider's request format lives in one function, per provider.
   - Do not store or return reasoning content. Parse only the final content.
 - **Do not assume provider behavior.** Query-instruction format, `dimensions` support, reasoning parameter names, and structured output together with reasoning are recorded in `docs/PROVIDER_NOTES.md` after verification with real calls. Code against the verified behavior only.

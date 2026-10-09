@@ -17,14 +17,12 @@ from .base import LLM, Embedder, EmbeddingDimensionError
 logger = logging.getLogger(__name__)
 
 
-class _UnsetType:
-    """Marks a respond() argument the caller did not pass."""
-
-
-_UNSET = _UnsetType()
-
-
 def openrouter_reasoning_params(effort: str | None) -> dict:
+    """Map a reasoning effort level to OpenRouter's verified request fields.
+
+    The vLLM equivalent is not verified yet (docs/PROVIDER_NOTES.md), so this is
+    the only mapping and it is used for both profiles.
+    """
     if not effort:
         return {}
     return {"reasoning": {"effort": effort, "exclude": False}}
@@ -81,25 +79,18 @@ class OpenRouterAdapter(Embedder, LLM):
     async def respond(
         self,
         *,
-        prompt: str | None = None,
-        messages: Sequence[dict] | None = None,
-        schema: BaseModel | None = None,
-        reasoning: dict | None | _UnsetType = _UNSET,
+        messages: Sequence[dict],
+        schema: type[BaseModel] | None = None,
+        reasoning_effort: str | None = None,
     ) -> dict:
         url = f"{self.settings.llm_base_url.rstrip('/')}/chat/completions"
-        # select() always passes schema=SelectionResult, answer() always
-        # passes schema=AnswerResult, so the schema identifies the step
-        # (same technique already verified in backend/scripts/prompt_eval.py).
+        # The output schema identifies the pipeline step, so it also picks the model.
         model = (
             self.settings.answer_model
             if schema is AnswerResult
             else self.settings.selection_model
         )
-        body: dict[str, Any] = {"model": model}
-        if messages is not None:
-            body["messages"] = list(messages)
-        elif prompt is not None:
-            body["input"] = prompt
+        body: dict[str, Any] = {"model": model, "messages": list(messages)}
         if schema is not None:
             name = "".join(
                 f"_{c.lower()}" if c.isupper() else c for c in schema.__name__
@@ -112,17 +103,7 @@ class OpenRouterAdapter(Embedder, LLM):
                     "schema": schema.model_json_schema(),
                 },
             }
-        # None means this step has reasoning off. The default applies only
-        # when the caller did not pass `reasoning` at all.
-        if isinstance(reasoning, _UnsetType):
-            reasoning_body: dict | None = {
-                "effort": self.settings.answer_reasoning_effort,
-                "exclude": False,
-            }
-        else:
-            reasoning_body = reasoning
-        if reasoning_body:
-            body["reasoning"] = reasoning_body
+        body.update(openrouter_reasoning_params(reasoning_effort))
 
         attempt = 0
         max_retries = int(self.settings.llm_max_retries)

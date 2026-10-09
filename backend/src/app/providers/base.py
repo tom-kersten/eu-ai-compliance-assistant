@@ -2,11 +2,9 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Any, Protocol, TypeVar
+from typing import Protocol
 
 from pydantic import BaseModel
-
-T = TypeVar("T")
 
 
 @dataclass
@@ -19,21 +17,6 @@ class Usage:
 
 class EmbeddingDimensionError(ValueError):
     """Raised when a provider returns vectors of an unexpected length."""
-
-
-class StructuredOutputError(ValueError):
-    """Raised when structured output cannot be produced after retries."""
-
-
-# Minimal placeholder schemas exported for convenience/import stability in tests.
-class SelectionResultSchema(BaseModel):
-    # Minimal shape used to request structured output; concrete schemas live
-    # in schemas/llm.py
-    result: Any
-
-
-class AnswerResultSchema(BaseModel):
-    result: Any
 
 
 class Embedder(Protocol):
@@ -49,8 +32,7 @@ class LLM(Protocol):
     async def respond(
         self,
         *,
-        prompt: str | None = None,
-        messages: Sequence[dict] | None = None,
-        schema: BaseModel | None = None,
-        reasoning: dict | None = None,
+        messages: Sequence[dict],
+        schema: type[BaseModel] | None = None,
+        reasoning_effort: str | None = None,
     ) -> dict: ...

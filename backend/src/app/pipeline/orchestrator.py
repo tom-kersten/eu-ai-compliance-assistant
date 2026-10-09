@@ -33,7 +33,9 @@ from app.schemas.domain import Provision
 
 logger = logging.getLogger(__name__)
 
-# Dutch cannot-answer explanation (minimal placeholder; frontend owns copy)
+# Shown verbatim on the two cannot_answer paths where no model writes an
+# explanation (nothing retrieved, or an empty final context). FinalEvent
+# requires non-empty text, so this one Dutch string lives in the backend.
 CANNOT_ANSWER_EXPLANATION = "Kan geen antwoord geven."
 
 

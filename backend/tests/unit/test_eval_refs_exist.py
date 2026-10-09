@@ -1,23 +1,26 @@
+import json
 from pathlib import Path
 
+import pytest
+
 from app.ingestion.manifest import load_indexed_provisions, load_manifest
+
+pytestmark = pytest.mark.unit
 
 
 def test_eval_refs_exist_in_corpus():
     manifest = load_manifest(Path("corpus/manifest.yaml"))
     provisions = load_indexed_provisions(manifest, Path("corpus"))
-    anchors = {prov.anchor for _, prov in provisions}
-
-    import json
+    # Eval refs are document-qualified ("AI-verordening:art_3"); anchors are not.
+    refs_in_corpus = {f"{doc.key}:{prov.anchor}" for doc, prov in provisions}
 
     questions = json.loads(Path("eval/eval_questions.json").read_text(encoding="utf-8"))
-    # collect all referenced anchors
-    refs = set()
+    referenced = set()
     for q in questions:
-        refs.update(q.get("must", []))
-        refs.update(q.get("optional", []))
-        refs.update(q.get("via_reference", []))
+        referenced.update(q.get("must", []))
+        referenced.update(q.get("optional", []))
+        referenced.update(q.get("via_reference", []))
 
-    # All refs should be present in anchors (direct compare; no normalizer)
-    missing = sorted(refs - anchors)
+    assert referenced, "eval file references no provisions"
+    missing = sorted(referenced - refs_in_corpus)
     assert not missing, f"Missing referenced anchors: {missing}"

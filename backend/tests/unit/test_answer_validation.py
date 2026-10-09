@@ -10,6 +10,8 @@ from app.pipeline.validators import (
 )
 from app.schemas.llm import AnswerResult, Message
 
+pytestmark = pytest.mark.unit
+
 
 def test_citation_subset_passes_and_fails():
     res = AnswerResult(

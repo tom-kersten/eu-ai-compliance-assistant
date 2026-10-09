@@ -1,9 +1,14 @@
 import asyncio
 
+import pytest
+
 from app.pipeline.resolve import resolve
 from app.pipeline.select import select, validate_selection
 from app.providers.fakes import ScriptedLLM
 from app.schemas.domain import Provision
+from app.schemas.llm import Message
+
+pytestmark = pytest.mark.unit
 
 
 class StubLookup:
@@ -43,7 +48,7 @@ async def run_integration():
         "external_references": [],
     }
     llm.push(payload)
-    msgs = [{"role": "user", "content": "x"}]
+    msgs = [Message(role="user", content="x")]
     res = await select(llm, msgs, reasoning_effort=None)
     # validate
     validate_selection(res, ["DOC:art_1"])
@@ -56,6 +61,6 @@ async def run_integration():
 
 
 def test_selection_integration():
-    res, rr = asyncio.get_event_loop().run_until_complete(run_integration())
+    res, rr = asyncio.run(run_integration())
     assert res.keep == ["DOC:art_1"]
-    assert len(rr.added) == 0 or len(rr.added) == 1
+    assert len(rr.added) == 0  # no requests, so nothing can be added

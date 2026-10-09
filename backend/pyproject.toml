@@ -42,3 +42,8 @@ src = ["src", "tests", "scripts"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]
+
+[tool.ruff.lint.isort]
+# eval/ is mounted at /app/eval rather than living under a `src` root, so
+# ruff cannot detect it as first-party on its own.
+known-first-party = ["app", "eval", "scripts"]

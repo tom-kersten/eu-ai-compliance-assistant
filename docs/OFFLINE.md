@@ -126,6 +126,7 @@ Compose-only variables and CLI flags for the offline profile. Marked
 | Optional `--hf-overrides` Matryoshka JSON | Unverified | Quoting-sensitive; not in the example default |
 | Embedding `dimensions=2000` on vLLM | Unverified | Caught by live endpoint / reliability tests |
 | Healthcheck `/health` (Python urllib) | Unverified | `start_period` 600s |
+| Reasoning request format | Unverified | The adapter sends OpenRouter's `reasoning` field (`openrouter_reasoning_params()`); a vLLM-specific mapping is not written yet |
 
 ### Live verification record
 

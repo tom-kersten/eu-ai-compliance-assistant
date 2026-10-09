@@ -30,6 +30,7 @@ PROGRESS_ADDED = "Toegevoegd"
 PROGRESS_UNAVAILABLE = "Niet beschikbaar"
 
 CITATIONS_HEADING = "Bronnen"
+CITATION_FALLBACK_LABEL = "Bron"
 DISCLAIMER = (
     "Dit is geen juridisch advies. De assistent legt bepalingen uit en wijst "
     "naar de brontekst; u past ze zelf toe."
@@ -40,10 +41,6 @@ EU_ASSUMPTION = (
 )
 SNAPSHOT_LABEL = "Corpus-snapshot"
 SNAPSHOT_FALLBACK = "onbekend"
-SNAPSHOT_UNAVAILABLE = "Corpus-snapshot niet beschikbaar"
-
-USER_ROLE_LABEL = "U"
-ASSISTANT_ROLE_LABEL = "Assistent"
 
 ERROR_MESSAGES: dict[str, str] = {
     "database_unreachable": "Database niet bereikbaar.",

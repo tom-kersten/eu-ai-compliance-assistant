@@ -73,8 +73,9 @@ def render_citation_expanders(citations: list[dict[str, Any]]) -> None:
     if not citations:
         return
     st.markdown(f"**{strings.CITATIONS_HEADING}**")
+    fallback = strings.CITATION_FALLBACK_LABEL
     for cite in citations:
-        header = cite.get("header") or cite.get("ref") or "bron"
+        header = cite.get("header") or cite.get("ref") or fallback
         with st.expander(header):
             st.markdown(cite.get("body") or "")
 

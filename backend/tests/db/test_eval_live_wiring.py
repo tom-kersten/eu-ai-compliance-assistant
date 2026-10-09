@@ -91,7 +91,6 @@ async def test_live_main_constructs_repository_and_adapter(
     captured: dict[str, object] = {}
 
     import eval.run_eval as runner
-
     from app.pipeline import orchestrator as orch
 
     monkeypatch.setattr(runner, "OpenRouterAdapter", PatchedAdapter)

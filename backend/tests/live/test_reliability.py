@@ -12,6 +12,9 @@ from pathlib import Path
 
 import httpx
 import pytest
+
+from app.config import Settings
+from app.schemas.llm import AnswerResult, SelectionResult
 from eval.reliability import (
     ANSWER_PROMPT,
     ANSWER_SCHEMA,
@@ -22,9 +25,6 @@ from eval.reliability import (
     parse_valid,
     suggest_max_retries,
 )
-
-from app.config import Settings
-from app.schemas.llm import AnswerResult, SelectionResult
 
 REPEATS = 10
 REPORT_PATH = Path("/app/eval/reports/reliability.json")
