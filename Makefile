@@ -108,15 +108,28 @@ verify-providers: ## Probe OpenRouter and write PROVIDER_NOTES.md (needs keys)
 		backend-test \
 		python scripts/verify_providers.py
 
-eval: ## Run the retrieval evaluation against the current index (needs T14)
-	@echo "eval: not implemented until T14 (eval runner)."
-	@exit 1
+eval: ## Run the retrieval evaluation against the current index
+	@test -f .env || { echo "Missing .env. Copy .env.example to .env and fill secrets."; exit 1; }
+	set -a; . ./.env; set +a; \
+	$(COMPOSE) $(PROFILE_TEST) run --rm --no-deps \
+		-e DATABASE_URL \
+		-e LLM_API_KEY -e EMBEDDING_API_KEY \
+		-e LLM_BASE_URL -e EMBEDDING_BASE_URL \
+		-e EMBEDDING_MODEL -e SELECTION_MODEL -e ANSWER_MODEL \
+		-e EMBEDDING_DIMENSIONS -e LLM_TIMEOUT_SECONDS \
+		-e ANSWER_REASONING_EFFORT -e SELECTION_REASONING_EFFORT \
+		-e SIMILARITY_THRESHOLD -e RETRIEVAL_TOP_K \
+		-e MAX_ADDED_PROVISIONS -e PROMPT_TOKEN_BUDGET \
+		-e RETRIEVAL_HISTORY_TURNS -e LLM_MAX_RETRIES \
+		-e PYTHONPATH=/app/src:/app \
+		backend-test \
+		python -m eval.run_eval $(ARGS)
 
 lint: ## Check ruff formatting and lint rules
 	$(COMPOSE) $(PROFILE_TEST) run --rm --no-deps backend-test \
-		ruff check src tests scripts && \
+		ruff check src tests scripts eval && \
 	$(COMPOSE) $(PROFILE_TEST) run --rm --no-deps backend-test \
-		ruff format --check src tests scripts && \
+		ruff format --check src tests scripts eval && \
 	$(COMPOSE) $(PROFILE_TEST) run --rm --no-deps frontend-test \
 		ruff check src tests && \
 	$(COMPOSE) $(PROFILE_TEST) run --rm --no-deps frontend-test \
@@ -124,9 +137,9 @@ lint: ## Check ruff formatting and lint rules
 
 fmt: ## Apply ruff formatting and lint fixes
 	$(COMPOSE) $(PROFILE_TEST) run --rm --no-deps backend-test \
-		ruff check --fix src tests scripts && \
+		ruff check --fix src tests scripts eval && \
 	$(COMPOSE) $(PROFILE_TEST) run --rm --no-deps backend-test \
-		ruff format src tests scripts && \
+		ruff format src tests scripts eval && \
 	$(COMPOSE) $(PROFILE_TEST) run --rm --no-deps frontend-test \
 		ruff check --fix src tests && \
 	$(COMPOSE) $(PROFILE_TEST) run --rm --no-deps frontend-test \

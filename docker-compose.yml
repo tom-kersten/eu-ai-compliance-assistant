@@ -131,12 +131,13 @@ services:
       target: dev
     environment:
       TEST_DATABASE_URL: postgresql://app:test@db-test:5432/test
-      PYTHONPATH: /app/src
+      PYTHONPATH: /app/src:/app
     depends_on:
       db-test:
         condition: service_healthy
     volumes:
       - ./backend:/app
+      - ./eval:/app/eval
       - ./postgres:/app/postgres:ro
       - ./corpus:/app/corpus:ro
       - ./.env.example:/env/.env.example:ro

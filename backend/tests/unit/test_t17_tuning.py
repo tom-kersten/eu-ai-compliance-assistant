@@ -6,8 +6,6 @@ import json
 from pathlib import Path
 
 import pytest
-from pydantic import BaseModel, ConfigDict
-
 from eval.reliability import (
     chat_request,
     message_content,
@@ -29,6 +27,7 @@ from eval.tuning import (
     suggest_threshold,
     vector_hit,
 )
+from pydantic import BaseModel, ConfigDict
 
 
 def _questions() -> list[dict]:
@@ -207,7 +206,7 @@ def test_required_added_cap_is_the_longest_via_reference_list() -> None:
 
 @pytest.mark.unit
 def test_eval_file_added_cap_covers_every_via_reference_list() -> None:
-    path = Path(__file__).resolve().parents[2] / "src" / "eval" / "eval_questions.json"
+    path = Path("/app/eval/eval_questions.json")
     questions = json.loads(path.read_text(encoding="utf-8"))
     cap = required_added_cap(questions)
     lengths = [len(question["via_reference"]) for question in questions]

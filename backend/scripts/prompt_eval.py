@@ -18,6 +18,14 @@ from pathlib import Path
 from typing import Any
 
 import httpx
+from eval.metrics import score_question
+from eval.reliability import (
+    ANSWER_SCHEMA,
+    SELECTION_SCHEMA,
+    chat_request,
+    message_content,
+)
+from eval.tuning import embedding_text, rank_similarities, retrieved_refs
 from pydantic import BaseModel, ValidationError
 
 from app.errors import AnswerInvalid, SelectionInvalid
@@ -33,14 +41,6 @@ from app.pipeline.resolve import resolve
 from app.pipeline.select import select, validate_selection
 from app.schemas.domain import Provision
 from app.schemas.llm import AnswerResult, Message, SelectionResult, Situation
-from eval.metrics import score_question
-from eval.reliability import (
-    ANSWER_SCHEMA,
-    SELECTION_SCHEMA,
-    chat_request,
-    message_content,
-)
-from eval.tuning import embedding_text, rank_similarities, retrieved_refs
 
 QUERY_PREFIX = (
     "Instruct: Given a web search query, retrieve relevant passages "
@@ -651,12 +651,12 @@ def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--report",
-        default="src/eval/reports/prompt_eval.json",
+        default="eval/reports/prompt_eval.json",
     )
     parser.add_argument("--corpus", default="/app/corpus/manifest.yaml")
     parser.add_argument(
         "--questions",
-        default="src/eval/eval_questions.json",
+        default="eval/eval_questions.json",
     )
     parser.add_argument("--question", type=str, default=None)
     args = parser.parse_args(argv)

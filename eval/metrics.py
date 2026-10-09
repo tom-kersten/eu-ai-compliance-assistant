@@ -1,8 +1,9 @@
-\"\"\"Evaluation metric helpers.\"\"\"
+# Evaluation metric helpers (backend copy).
 from __future__ import annotations
-from typing import Iterable
 
-from app.schemas.api import RetrievedEvent, SelectionEvent, FinalEvent
+from collections.abc import Iterable, Sequence
+
+from app.schemas.api import RetrievedEvent, SelectionEvent
 
 
 def vector_hit(retrieved: RetrievedEvent, must_refs: Iterable[str]) -> bool:
@@ -15,25 +16,45 @@ def selection_hit(selection: SelectionEvent, must_refs: Iterable[str]) -> bool:
     return set(must_refs).issubset(kept_and_added)
 
 
-def evaluate_question(
-    retrieved: RetrievedEvent | None,
-    selection: SelectionEvent | None,
-    final: FinalEvent,
-    must_refs: Iterable[str],
-) -> dict:
-    vhit = False if (retrieved is None) else vector_hit(retrieved, must_refs)
-    shit = False if (selection is None) else selection_hit(selection, must_refs)
-    return {
-        "id": final.corpus_snapshot.isoformat() + ":" + final.action,  # placeholder id if needed
-        "expected_behavior": final.action,
-        "actual_action": final.action,
-        "behavior_match": True,
-        "vector_hit": vhit,
-        "selection_hit": shit,
-        "llm_call_count": final.usage.calls,
-        "prompt_tokens": final.usage.prompt_tokens,
-        "completion_tokens": final.usage.completion_tokens,
-        "reasoning_tokens": final.usage.reasoning_tokens,
-        "latency_seconds": 0.0,
-    }
+def context_hit(final_refs: Iterable[str], must_refs: Iterable[str]) -> bool:
+    """True when every must-ref is in the final context (kept plus added)."""
+    return set(must_refs).issubset(set(final_refs))
 
+
+def behavior_match(expected: str, actual: str) -> bool:
+    return expected == actual
+
+
+def empty_retrieval_ok(
+    *,
+    retrieved_count: int,
+    action: str,
+    llm_call_count: int,
+) -> bool:
+    """Q09-style: empty retrieval yields cannot_answer with zero LLM calls."""
+    if retrieved_count != 0:
+        return False
+    return action == "cannot_answer" and llm_call_count == 0
+
+
+def score_question(
+    *,
+    must_refs: Sequence[str],
+    expected_behavior: str,
+    retrieved_refs: Sequence[str],
+    final_refs: Sequence[str],
+    action: str,
+    llm_call_count: int,
+) -> dict[str, bool | int]:
+    """Pure scoring for one eval question after a pipeline run."""
+    return {
+        "vector_hit": set(must_refs).issubset(set(retrieved_refs)),
+        "context_hit": context_hit(final_refs, must_refs),
+        "behavior_match": behavior_match(expected_behavior, action),
+        "empty_retrieval_ok": empty_retrieval_ok(
+            retrieved_count=len(retrieved_refs),
+            action=action,
+            llm_call_count=llm_call_count,
+        ),
+        "llm_call_count": llm_call_count,
+    }

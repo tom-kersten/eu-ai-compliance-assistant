@@ -12,9 +12,6 @@ from pathlib import Path
 
 import httpx
 import pytest
-
-from app.config import Settings
-from app.schemas.llm import AnswerResult, SelectionResult
 from eval.reliability import (
     ANSWER_PROMPT,
     ANSWER_SCHEMA,
@@ -26,8 +23,11 @@ from eval.reliability import (
     suggest_max_retries,
 )
 
+from app.config import Settings
+from app.schemas.llm import AnswerResult, SelectionResult
+
 REPEATS = 10
-REPORT_PATH = Path("/app/src/eval/reports/reliability.json")
+REPORT_PATH = Path("/app/eval/reports/reliability.json")
 SELF_HOSTED_URL = os.environ.get("SELF_HOSTED_LLM_BASE_URL", "http://vllm-llm:8000/v1")
 
 

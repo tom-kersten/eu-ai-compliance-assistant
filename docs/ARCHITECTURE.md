@@ -69,9 +69,13 @@ The LLM and embedding endpoints are selected independently by configuration, so 
 │   ├── pyproject.toml
 │   ├── src/ui/                   # app.py, client.py, state.py, components.py
 │   └── tests/
-├── eval/                         # eval_questions.json, run_eval.py
+├── eval/                         # single package: run_eval.py, models, metrics,
+│                                 # fakes, reliability, tuning, eval_questions.*,
+│                                 # reports/; mounted into backend-test as /app/eval
 └── docs/                         # REFERENCE.md, ARCHITECTURE.md
 ```
+
+There is no `backend/src/eval` copy. Tests and `make eval` import the root `eval/` package via the `backend-test` mount and `PYTHONPATH=/app/src:/app`.
 
 **Dependency rule:** `pipeline` imports only `schemas` and the protocols in `providers/base.py`. `api` wires concrete providers and the repository into the pipeline. `ingestion` and `pipeline` do not import each other.
 
@@ -556,9 +560,13 @@ services:
   backend-test:
     profiles: [test]
     build: { context: ./backend, target: dev }
-    environment: { TEST_DATABASE_URL: "postgresql://app:test@db-test:5432/test" }
+    environment:
+      TEST_DATABASE_URL: "postgresql://app:test@db-test:5432/test"
+      PYTHONPATH: /app/src:/app
     depends_on: { db-test: { condition: service_healthy } }
-    volumes: ["./backend:/app", "./postgres:/app/postgres:ro", "./corpus:/app/corpus:ro"]
+    volumes:
+      ["./backend:/app", "./eval:/app/eval", "./postgres:/app/postgres:ro",
+       "./corpus:/app/corpus:ro"]
 volumes: { pgdata: {}, hf-cache: {} }
 ```
 
@@ -602,6 +610,21 @@ The Makefile in the repository root holds the common operations. Each target is 
 | `api` | Endpoints and SSE events, with the pipeline running on fake providers. | None. |
 | `live` | Real providers, hosted or self-hosted: embedding dimension, and structured-output reliability run with the configured reasoning settings. | Opt-in, needs keys or GPUs. |
 | eval | Retrieval hit rate at two stages with the real index, on the Dutch eval set. | Real embeddings. |
+
+### Eval runner
+
+`make eval` runs `python -m eval.run_eval` inside `backend-test` (same pattern as `verify-providers`). The runtime `backend` service is not used. The database must be up and ingested; `.env` must exist. Useful flags:
+
+| Flag | Effect |
+|---|---|
+| `--use-fakes` | Scripted fakes only; no keys or database required (still needs `.env` present for the Makefile). |
+| `--question Q03` | Run a single eval question. |
+| `--verbose` | Print every orchestrator event. |
+| `--reports-dir DIR` | Report directory (default `eval/reports`). |
+
+Reports are written to `eval/reports/<timestamp>.json`. Each report has `generated_at`, a `summary` block (totals and hit/behavior rates over questions with a non-empty `must` set), and `items` with: `id`, `expected_behavior`, `actual_action`, `behavior_match`, `vector_hit`, `selection_hit`, `llm_call_count`, token counts, and `latency_seconds`. Example: `make eval ARGS="--question Q03 --verbose"`.
+
+No new settings were added for the eval runner; the `.env` examples are unchanged.
 
 Fixtures: a deterministic fake embedder, a scripted fake LLM, and a small test corpus in a throwaway database. Golden tests use real provisions from the corpus, for example `art_4a` (lettered article), `art_6` (amendment markers between paragraphs), and Omnibus Article 1 (excluded or oversized, depending on the manifest).
 

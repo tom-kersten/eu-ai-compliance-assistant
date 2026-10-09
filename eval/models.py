@@ -1,7 +1,7 @@
-\"\"\"Pydantic models for eval files and reports.\"\"\"
+# Pydantic models for eval files and reports (backend copy).
 from __future__ import annotations
+
 from datetime import datetime
-from typing import List
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -13,14 +13,14 @@ class EvalQuestion(BaseModel):
     type: str
     question: str
     expected_behavior: str
-    must: List[str] = Field(default_factory=list)
-    optional: List[str] = Field(default_factory=list)
-    via_reference: List[str] = Field(default_factory=list)
+    must: list[str] = Field(default_factory=list)
+    optional: list[str] = Field(default_factory=list)
+    via_reference: list[str] = Field(default_factory=list)
 
 
 class EvalFile(BaseModel):
     model_config = ConfigDict(extra="forbid")
-    questions: List[EvalQuestion]
+    questions: list[EvalQuestion]
 
 
 class EvalReportItem(BaseModel):
@@ -43,6 +43,5 @@ class EvalReport(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     generated_at: datetime
-    items: List[EvalReportItem]
+    items: list[EvalReportItem]
     summary: dict
-
