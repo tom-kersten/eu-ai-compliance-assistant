@@ -9,6 +9,7 @@ import pytest
 from app.config import Settings
 from app.providers.fakes import FakeEmbedder, ScriptedLLM
 from app.providers.openai_compat import OpenRouterAdapter
+from app.schemas.llm import AnswerResult, SelectionResult
 
 
 @pytest.mark.unit
@@ -80,12 +81,18 @@ async def test_openrouter_llm_includes_response_format_and_reasoning_and_retries
 
     calls = []
 
+    def _chat_completion(result: dict) -> dict:
+        return {
+            "choices": [{"message": {"content": json.dumps(result)}}],
+            "usage": {"prompt_tokens": 1, "completion_tokens": 2},
+        }
+
     async def handler(request: httpx.Request) -> httpx.Response:
         calls.append(json.loads(request.content.decode()))
         # first call simulate 500, then 200
         if len(calls) == 1:
             return httpx.Response(500, json={"error": "server"})
-        return httpx.Response(200, json={"output": {"result": "ok"}})
+        return httpx.Response(200, json=_chat_completion({"result": "ok"}))
 
     transport = httpx.MockTransport(handler)
     client = httpx.AsyncClient(transport=transport)
@@ -98,10 +105,48 @@ async def test_openrouter_llm_includes_response_format_and_reasoning_and_retries
 
     monkeypatch.setattr(asyncio, "sleep", noop_sleep)
 
-    data = await adapter.respond(prompt="hello", schema=None)
-    assert data["output"]["result"] == "ok"
+    data = await adapter.respond(
+        messages=[{"role": "user", "content": "hello"}], schema=None
+    )
+    assert data["result"] == "ok"
     # ensure reasoning present and response_format (in second call too)
     assert any("reasoning" in call for call in calls)
+    await client.aclose()
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_openrouter_llm_uses_the_model_for_the_calling_step() -> None:
+    """select() always passes schema=SelectionResult, answer() always passes
+    schema=AnswerResult, so respond() must route to selection_model /
+    answer_model accordingly, even when the two differ."""
+    settings = Settings()
+    settings.selection_model = "sel-model"
+    settings.answer_model = "ans-model"
+    sent_models: list[str] = []
+
+    async def handler(request: httpx.Request) -> httpx.Response:
+        sent_models.append(json.loads(request.content.decode())["model"])
+        return httpx.Response(
+            200,
+            json={
+                "choices": [{"message": {"content": json.dumps({"result": "ok"})}}],
+                "usage": {"prompt_tokens": 1, "completion_tokens": 2},
+            },
+        )
+
+    transport = httpx.MockTransport(handler)
+    client = httpx.AsyncClient(transport=transport)
+    adapter = OpenRouterAdapter(settings)
+    adapter.client = client
+
+    await adapter.respond(
+        messages=[{"role": "user", "content": "x"}], schema=SelectionResult
+    )
+    await adapter.respond(
+        messages=[{"role": "user", "content": "x"}], schema=AnswerResult
+    )
+    assert sent_models == ["sel-model", "ans-model"]
     await client.aclose()
 
 
@@ -114,13 +159,21 @@ async def test_openrouter_llm_omits_reasoning_when_caller_disables_it() -> None:
 
     async def handler(request: httpx.Request) -> httpx.Response:
         captured.append(json.loads(request.content.decode()))
-        return httpx.Response(200, json={"output": {"result": "ok"}})
+        return httpx.Response(
+            200,
+            json={
+                "choices": [{"message": {"content": json.dumps({"result": "ok"})}}],
+                "usage": {"prompt_tokens": 1, "completion_tokens": 2},
+            },
+        )
 
     transport = httpx.MockTransport(handler)
     client = httpx.AsyncClient(transport=transport)
     adapter = OpenRouterAdapter(settings)
     adapter.client = client
 
-    await adapter.respond(prompt="hello", reasoning=None)
+    await adapter.respond(
+        messages=[{"role": "user", "content": "hello"}], reasoning=None
+    )
     assert "reasoning" not in captured[0]
     await client.aclose()

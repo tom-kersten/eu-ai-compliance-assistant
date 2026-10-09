@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import logging
 from collections.abc import Sequence
 from typing import Any
@@ -9,6 +10,7 @@ import httpx
 from pydantic import BaseModel
 
 from app.config import Settings
+from app.schemas.llm import AnswerResult
 
 from .base import LLM, Embedder, EmbeddingDimensionError
 
@@ -84,18 +86,31 @@ class OpenRouterAdapter(Embedder, LLM):
         schema: BaseModel | None = None,
         reasoning: dict | None | _UnsetType = _UNSET,
     ) -> dict:
-        url = f"{self.settings.llm_base_url.rstrip('/')}/responses"
-        body: dict[str, Any] = {"model": self.settings.selection_model}
+        url = f"{self.settings.llm_base_url.rstrip('/')}/chat/completions"
+        # select() always passes schema=SelectionResult, answer() always
+        # passes schema=AnswerResult, so the schema identifies the step
+        # (same technique already verified in backend/scripts/prompt_eval.py).
+        model = (
+            self.settings.answer_model
+            if schema is AnswerResult
+            else self.settings.selection_model
+        )
+        body: dict[str, Any] = {"model": model}
         if messages is not None:
             body["messages"] = list(messages)
         elif prompt is not None:
             body["input"] = prompt
         if schema is not None:
+            name = "".join(
+                f"_{c.lower()}" if c.isupper() else c for c in schema.__name__
+            ).lstrip("_")
             body["response_format"] = {
                 "type": "json_schema",
-                "strict": True,
-                "additionalProperties": False,
-                "schema": schema.schema(),
+                "json_schema": {
+                    "name": name,
+                    "strict": True,
+                    "schema": schema.model_json_schema(),
+                },
             }
         # None means this step has reasoning off. The default applies only
         # when the caller did not pass `reasoning` at all.
@@ -127,8 +142,16 @@ class OpenRouterAdapter(Embedder, LLM):
                     )
                 resp.raise_for_status()
                 data = resp.json()
-                return data
-            except (httpx.HTTPStatusError, httpx.TimeoutException) as exc:
+                content = data["choices"][0]["message"]["content"]
+                parsed = json.loads(content)
+                parsed["usage"] = data.get("usage", {})
+                return parsed
+            except (
+                httpx.HTTPStatusError,
+                httpx.TimeoutException,
+                json.JSONDecodeError,
+                KeyError,
+            ) as exc:
                 if attempt >= max_retries:
                     logger.error("LLM request failed after retries", exc_info=exc)
                     raise
