@@ -59,7 +59,7 @@ The LLM and embedding endpoints are selected independently by configuration, so 
 │   │   ├── schemas/              # api.py, llm.py, domain.py (Pydantic)
 │   │   ├── providers/            # base.py (protocols), openai_compat.py, fakes.py
 │   │   ├── ingestion/            # parsers/, chunker.py, headers.py, run.py
-│   │   ├── store/                # db.py, repository.py, migrate.py
+│   │   ├── store/                # db.py, repository.py, migrate.py, health.py
 │   │   ├── pipeline/             # query.py, retrieve.py, select.py, resolve.py,
 │   │   │                         # answer.py, prompts/, orchestrator.py
 │   │   └── api/                  # main.py, routes.py, sse.py

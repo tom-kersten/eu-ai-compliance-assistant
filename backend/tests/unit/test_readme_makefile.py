@@ -25,12 +25,11 @@ def parse_make_targets(makefile_text: str) -> set[str]:
 
 
 def test_readme_and_makefile_targets():
-    root = Path("/app")
+    # Mounted read-only by docker-compose.yml's backend-test service (added in
+    # T20), alongside docker-compose.yml and docs/OFFLINE.md.
+    root = Path("/repo")
     makefile = root / "Makefile"
-    if not makefile.exists():
-        pytest.skip(
-            "Makefile not available in test container; skip check (see T19 plan step)"
-        )
+    assert makefile.exists(), "Makefile not mounted into backend-test at /repo"
     make_text = makefile.read_text(encoding="utf8")
     targets = parse_make_targets(make_text)
 
