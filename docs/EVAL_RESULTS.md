@@ -122,3 +122,23 @@ Answers for Q01–Q04, Q06, and Q07 are in Dutch, address the user formally, and
 
 - Selection and answer prompts rewritten to match `PROMPT_SPEC` (keep/discard, clarify conditions, no role inference from “gebruiken”, bare request labels).
 - `normalize_label` strips common prefixes (`Artikel15`, `art.6`, `bijlage III`) so requested provisions resolve to indexed refs. That fixed Q06 `art_15` and Q07 `art_113` context misses from the earlier T18v2 run.
+
+## Full-stack `make eval` run (first real run through the production path)
+
+Everything above ran through bespoke scripts (`backend/scripts/calibrate.py`, `backend/scripts/prompt_eval.py`) that call OpenRouter directly rather than through `app.providers.openai_compat.OpenRouterAdapter`. Fixing T14 (the `make eval` Makefile target was a stub until then) finally exercised `app.pipeline.orchestrator.run` together with a real `Repository` and the real adapter for the first time, which surfaced three adapter bugs that had been invisible because nothing had ever called that code path with real credentials: a wrong endpoint (`/responses` instead of `/chat/completions`), a `response_format` shape that didn't match the one `make verify-providers` actually verified, and — the one that mattered — `respond()` returning the raw provider envelope instead of the parsed `message.content`, so every real structured-output call was guaranteed to fail validation. All three are fixed in `openai_compat.py`.
+
+With those fixed, `make eval` (hosted, `qwen/qwen3.8-27b`, same retrieval settings as above):
+
+| Question | Expected | Actual | Behavior match | Vector hit | Selection hit | LLM calls | Latency (s) |
+|---|---|---|---|---|---|---|---|
+| Q01 | answer | answer | yes | yes | yes | 2 | 53.7 |
+| Q02 | answer | answer | yes | yes | yes | 2 | 34.8 |
+| Q03 | answer | answer | yes | yes | yes | 2 | 29.1 |
+| Q04 | answer | answer | yes | yes | yes | 2 | 45.7 |
+| Q05 | answer | answer | yes | yes | yes | 2 | 75.3 |
+| Q06 | answer | answer | yes | no | no | 3 | 134.8 |
+| Q07 | answer | answer | yes | no | no | 2 | 27.2 |
+| Q08 | clarify | clarify | yes | no | no | 2 | 105.8 |
+| Q09 | cannot_answer | cannot_answer | yes | yes | yes | 0 | 7.4 |
+
+Behavior matches **9/9**, including Q05, which missed behavior in the `prompt_eval.py` run above. `vector_hit`/`selection_hit` here are computed slightly differently than the table above (strict "all must-refs in `kept`+`added`" rather than allowing for retrieval-ranked recovery), so Q06-Q08 show `no` despite answering correctly — consistent with, not a contradiction of, the retrieval gaps already documented for those three questions. Q06's 3 calls reflect one retried answer-step attempt, same transient-JSON pattern noted above. Report: `eval/reports/<timestamp>.json`.

@@ -1,9 +1,8 @@
 event: status
-data: {"step":"searching"}
+data: {"event":"status","step":"searching"}
 
 event: retrieved
-data: {"provisions":[{"ref":"art_4a","title":"Artikel 4a","similarity":0.92}]}
+data: {"event":"retrieved","provisions":[{"ref":"AI-verordening:art_4a","title":"Artikel 4a","similarity":0.92}]}
 
 event: final
-data: {"action":"answer","answer":"Deel1 Deel2","clarifying_questions":null,"citations":[],"situation":{},"usage":{}}
-
+data: {"event":"final","action":"answer","answer":"Deel1 Deel2","clarifying_questions":[],"citations":[{"ref":"AI-verordening:art_4a","header":"Artikel 4a","body":"Tekst"}],"situation":{"role":"unknown","domain":null,"notes":null},"usage":{"calls":2,"prompt_tokens":10,"completion_tokens":5,"reasoning_tokens":0,"prompt_versions":{}},"corpus_snapshot":"2026-10-01"}

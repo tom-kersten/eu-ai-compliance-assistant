@@ -1,0 +1,17 @@
+event: status
+data: {"event":"status","step":"searching"}
+
+event: retrieved
+data: {"event":"retrieved","provisions":[{"ref":"AI-verordening:art_3","title":"Definities","similarity":0.88}]}
+
+event: status
+data: {"event":"status","step":"selecting"}
+
+event: selection
+data: {"event":"selection","kept":["AI-verordening:art_3"],"discarded":[],"added":[],"unavailable":[]}
+
+event: status
+data: {"event":"status","step":"answering"}
+
+event: final
+data: {"event":"final","action":"clarify","answer":null,"clarifying_questions":["Bent u de aanbieder of de gebruiksverantwoordelijke?"],"citations":[],"situation":{"role":"unknown","domain":null,"notes":null},"usage":{"calls":2,"prompt_tokens":80,"completion_tokens":30,"reasoning_tokens":10,"prompt_versions":{"selection":"v1","answer":"v1"}},"corpus_snapshot":"2026-10-01"}

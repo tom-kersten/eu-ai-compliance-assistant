@@ -1,8 +1,16 @@
+"""HTTP client and SSE parser for the backend API."""
+
 from __future__ import annotations
 
 import json
+import os
+from collections.abc import Iterator
 from dataclasses import dataclass
 from typing import Any
+
+import httpx
+
+DEFAULT_BACKEND_URL = "http://backend:8000"
 
 
 @dataclass(frozen=True)
@@ -40,24 +48,27 @@ class ErrorEvent:
     message: str
 
 
+@dataclass(frozen=True)
+class CorpusInfo:
+    documents: list[dict[str, Any]]
+    snapshot_date: str
+
+
+AskEvent = StatusEvent | RetrievedEvent | SelectionEvent | FinalEvent | ErrorEvent
+
+
 class SSEParser:
-    """
-    Minimal SSE parser for the frontend tests.
-    Call feed() with bytes; it returns a list of typed events parsed up to the
-    last complete double-newline. Call feed(b"") to flush any remaining data.
-    """
+    """Incremental SSE parser. Call feed() with bytes; flush with feed(b"")."""
 
     def __init__(self) -> None:
         self._buf = ""
 
-    def feed(self, data: bytes) -> list[Any]:
+    def feed(self, data: bytes) -> list[AskEvent]:
         text = data.decode("utf-8") if data else ""
-        # Normalize CRLF to LF
         text = text.replace("\r\n", "\n")
         self._buf += text
-        events: list[Any] = []
+        events: list[AskEvent] = []
 
-        # If called with an empty chunk, try to flush any remaining event(s).
         if data == b"" and self._buf.strip():
             raw = self._buf
             self._buf = ""
@@ -75,23 +86,20 @@ class SSEParser:
                 events.append(ev)
         return events
 
-    def _parse_chunk(self, chunk: str) -> Any | None:
+    def _parse_chunk(self, chunk: str) -> AskEvent | None:
         lines = [line for line in chunk.split("\n") if line.strip() != ""]
-        event_name = None
+        event_name: str | None = None
         data_lines: list[str] = []
         for line in lines:
             if line.startswith("event:"):
                 event_name = line.split(":", 1)[1].strip()
             elif line.startswith("data:"):
                 data_lines.append(line.split(":", 1)[1].lstrip())
-            else:
-                # ignore other fields or comments
-                pass
 
         data_text = "\n".join(data_lines) if data_lines else ""
         try:
-            payload = json.loads(data_text) if data_text else {}
-        except Exception:
+            payload: dict[str, Any] = json.loads(data_text) if data_text else {}
+        except json.JSONDecodeError:
             payload = {}
 
         if event_name == "status":
@@ -120,16 +128,87 @@ class SSEParser:
                 code=payload.get("code", "client_error"),
                 message=payload.get("message", ""),
             )
-        # Unknown event - ignore
         return None
 
 
-def __all__() -> list[str]:
-    return [
-        "SSEParser",
-        "StatusEvent",
-        "RetrievedEvent",
-        "SelectionEvent",
-        "FinalEvent",
-        "ErrorEvent",
-    ]
+class BackendClient:
+    """Thin wrapper around POST /v1/ask (SSE) and GET /v1/corpus."""
+
+    def __init__(
+        self,
+        base_url: str | None = None,
+        http_client: httpx.Client | None = None,
+    ) -> None:
+        self._base_url = (base_url or DEFAULT_BACKEND_URL).rstrip("/")
+        self._owns_client = http_client is None
+        self._http = http_client or httpx.Client(
+            base_url=self._base_url,
+            timeout=None,
+        )
+
+    def close(self) -> None:
+        if self._owns_client:
+            self._http.close()
+
+    def ask(
+        self,
+        messages: list[dict[str, Any]],
+        situation: dict[str, Any],
+    ) -> Iterator[AskEvent]:
+        """Stream typed events from POST /v1/ask. Never raises for ask failures."""
+        parser = SSEParser()
+        saw_terminal = False
+        try:
+            with self._http.stream(
+                "POST",
+                "/v1/ask",
+                json={"messages": messages, "situation": situation},
+            ) as response:
+                if response.status_code != 200:
+                    # Drain the body so the connection can be reused.
+                    _ = response.read()
+                    yield ErrorEvent(
+                        code="client_http_error",
+                        message=f"HTTP {response.status_code}",
+                    )
+                    return
+                for chunk in response.iter_bytes():
+                    for event in parser.feed(chunk):
+                        if isinstance(event, (FinalEvent, ErrorEvent)):
+                            saw_terminal = True
+                        yield event
+                for event in parser.feed(b""):
+                    if isinstance(event, (FinalEvent, ErrorEvent)):
+                        saw_terminal = True
+                    yield event
+        except httpx.HTTPError as exc:
+            yield ErrorEvent(
+                code="client_connection_error",
+                message=str(exc) or "connection error",
+            )
+            return
+
+        if not saw_terminal:
+            yield ErrorEvent(
+                code="client_incomplete_stream",
+                message="stream ended without final or error",
+            )
+
+    def fetch_corpus(self) -> CorpusInfo:
+        """GET /v1/corpus. Raises httpx.HTTPError on failure."""
+        response = self._http.get("/v1/corpus")
+        response.raise_for_status()
+        data = response.json()
+        snapshot = data.get("snapshot_date")
+        if not isinstance(snapshot, str):
+            snapshot = str(snapshot) if snapshot is not None else ""
+        return CorpusInfo(
+            documents=list(data.get("documents", [])),
+            snapshot_date=snapshot,
+        )
+
+
+def get_client() -> BackendClient:
+    """Injection seam for the Streamlit app and tests."""
+    base_url = os.environ.get("BACKEND_URL", DEFAULT_BACKEND_URL)
+    return BackendClient(base_url=base_url)

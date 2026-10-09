@@ -1,12 +1,17 @@
 event: status
-data: {"step":"searching"}
+data: {"event":"status","step":"searching"}
 
 event: retrieved
-data: {"provisions":[{"ref":"art_4a","title":"Artikel 4a","similarity":0.92}]}
+data: {"event":"retrieved","provisions":[{"ref":"AI-verordening:art_4a","title":"Artikel 4a","similarity":0.92}]}
+
+event: status
+data: {"event":"status","step":"selecting"}
 
 event: selection
-data: {"kept":["art_4a"],"discarded":[],"added":[],"unavailable":[]}
+data: {"event":"selection","kept":["AI-verordening:art_4a"],"discarded":["AVG:art_9"],"added":["AI-verordening:anx_III"],"unavailable":["CRA:art_1"]}
+
+event: status
+data: {"event":"status","step":"answering"}
 
 event: final
-data: {"action":"answer","answer":"Dit is een antwoord.","clarifying_questions":null,"citations":[{"ref":"art_4a","header":"Artikel 4a","body":"Volledige tekst"}],"situation":{"role":"beheerder"},"usage":{"calls":2},"corpus_snapshot":"2026-10-01"}
-
+data: {"event":"final","action":"answer","answer":"Dit is een antwoord.","clarifying_questions":[],"citations":[{"ref":"AI-verordening:art_4a","header":"Artikel 4a","body":"Volledige tekst van artikel 4a."}],"situation":{"role":"provider","domain":"werving","notes":null},"usage":{"calls":2,"prompt_tokens":100,"completion_tokens":50,"reasoning_tokens":20,"prompt_versions":{"selection":"v1","answer":"v1"}},"corpus_snapshot":"2026-10-01"}

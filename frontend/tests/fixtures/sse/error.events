@@ -1,0 +1,5 @@
+event: status
+data: {"event":"status","step":"searching"}
+
+event: error
+data: {"event":"error","code":"retrieval_failed","message":"retrieval failed"}
