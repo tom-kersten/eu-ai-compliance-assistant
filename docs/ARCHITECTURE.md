@@ -421,6 +421,10 @@ The API checks for client disconnection between steps and stops calling the LLM 
 
 Responses use `Cache-Control: no-cache`. There is no reverse proxy in v1, so no further buffering concerns.
 
+**Request id.** Every request accepts an optional `X-Request-Id` header (printable ASCII, no whitespace, max 128 characters). When missing or invalid, the API generates a UUID. The same value is echoed on every response, including SSE streams, and is attached to every log record for that request.
+
+**`POST /v1/ask` order.** FastAPI validates the body first (`extra="forbid"`); a bad shape returns 422 and never opens a stream or runs a health check. A live health check then runs. Any health failure returns HTTP 503 with `{"code":"<reason>","message":"<short>"}` and no `text/event-stream` body. Otherwise the response is `text/event-stream` with `Cache-Control: no-cache` and the echoed `X-Request-Id`, iterating the orchestrator. Orchestrator `error` events pass through and close the stream. Exceptions that escape the generator are mapped to a single `error` event (`selection_invalid`, `answer_invalid`, `provider_error`, or `internal_error`) and the stream closes. After each yielded event the API checks for client disconnect and stops so no further step or LLM call starts.
+
 Health endpoint shape and documented error codes:
 - `/health` returns 200 with the minimal healthy body:
 
@@ -430,11 +434,13 @@ Health endpoint shape and documented error codes:
 
   {"status":"unhealthy","reason":"<code>","detail":"<short message>"}
 
-  The documented `reason` codes are:
+  Health `reason` codes (also used as `code` on the ask pre-stream 503 body):
   - database_unreachable
   - pending_migrations
   - missing_index
   - embedding_mismatch
+
+  SSE `error` event codes (and ask pre-stream codes above):
   - retrieval_failed
   - llm_invalid_output
   - selection_invalid
