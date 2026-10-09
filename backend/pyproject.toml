@@ -39,6 +39,9 @@ markers = [
 target-version = "py312"
 line-length = 88
 src = ["src", "tests", "scripts"]
+# Like pytest's cache_dir: keep caches out of the bind-mounted source, which the
+# container user cannot write when the host UID differs (e.g. CI runners).
+cache-dir = "/tmp/ruff_cache"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]

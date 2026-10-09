@@ -23,6 +23,8 @@ cache_dir = "/tmp/pytest_cache"
 target-version = "py312"
 line-length = 88
 src = ["src", "tests"]
+# Keep the cache out of the bind-mounted source (see backend/pyproject.toml).
+cache-dir = "/tmp/ruff_cache"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]
