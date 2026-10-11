@@ -138,7 +138,7 @@ The adapter must parse only `message.content`. Do not store or return reasoning 
 - Embeddings request shape: `dimensions` is a top-level field on the request body, never nested under a `parameters` object. `input` must always be a JSON array, even for a single text - a bare string is rejected with HTTP 400 (OpenRouter error code 20015).
 - Send dimensions=2000 on every embeddings request and raise if the returned length differs.
 - Query instruction did not improve separation on the probe set; still apply the model-card Instruct/Query format with the legal task wording for consistency: `Given a Dutch question about EU AI, privacy, or cybersecurity law, retrieve the relevant statutory provision`.
-- Use embedding batch size None (largest successful probe; failed=[1]).
+- No batch size succeeded in the probe (failed=[1]). Keep the configured EMBEDDING_BATCH_SIZE and rerun the probe. Ingestion has since run with `EMBEDDING_BATCH_SIZE=100` without errors (359 chunks in 4 batches, 2026-10-11).
 - Request structured output with response_format type=json_schema, strict=true, additionalProperties=false, schemas shaped like SelectionResult and AnswerResult.
 - Reasoning parameter for OpenRouter: {'reasoning': {'effort': 'medium', 'exclude': False}}. Works with structured output: True.
 - Parse only message.content. Discard reasoning / reasoning_details. Observed reasoning fields: ['message.reasoning', 'message.reasoning_details'].

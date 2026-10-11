@@ -68,6 +68,22 @@ class VerificationReport:
     decisions: list[str] = field(default_factory=list)
 
 
+def batch_size_decision(limits: dict[str, Any]) -> str:
+    """The embedding batch-size decision from the batch probe results."""
+    failed = limits.get("batch_sizes_failed")
+    batch = limits.get("practical_batch_size")
+    if batch is None:
+        # The probe stops at the first failure, so one failed request leaves no
+        # measured size. Recommending "None" would be read as a setting.
+        return (
+            f"No batch size succeeded in the probe (failed={failed}). Keep the "
+            "configured EMBEDDING_BATCH_SIZE and rerun the probe."
+        )
+    return (
+        f"Use embedding batch size {batch} (largest successful probe; failed={failed})."
+    )
+
+
 def _yamlish(value: Any, indent: int = 0) -> list[str]:
     prefix = "  " * indent
     if isinstance(value, dict):

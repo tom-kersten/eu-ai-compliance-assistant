@@ -9,6 +9,7 @@ from scripts.provider_notes import (
     CallBudget,
     CallBudgetExceeded,
     VerificationReport,
+    batch_size_decision,
     redact,
     render_notes,
 )
@@ -160,3 +161,23 @@ def test_call_budget_stops_before_cap() -> None:
         budget.acquire()
 
     assert budget.used == MAX_HTTP_CALLS
+
+
+@pytest.mark.unit
+def test_batch_size_decision_names_the_largest_successful_probe() -> None:
+    decision = batch_size_decision(
+        {"practical_batch_size": 100, "batch_sizes_failed": []}
+    )
+
+    assert "batch size 100" in decision
+
+
+@pytest.mark.unit
+def test_batch_size_decision_without_a_successful_probe_recommends_nothing() -> None:
+    decision = batch_size_decision(
+        {"practical_batch_size": None, "batch_sizes_failed": [1]}
+    )
+
+    assert "None" not in decision
+    assert "No batch size succeeded" in decision
+    assert "EMBEDDING_BATCH_SIZE" in decision

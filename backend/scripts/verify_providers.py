@@ -21,6 +21,7 @@ from scripts.provider_notes import (
     CallBudget,
     CallBudgetExceeded,
     VerificationReport,
+    batch_size_decision,
     redact,
     render_notes,
 )
@@ -824,11 +825,7 @@ class ProviderVerifier:
                 f"task wording for consistency: `{LEGAL_TASK}`."
             )
 
-        batch = limits.get("practical_batch_size")
-        decisions.append(
-            f"Use embedding batch size {batch} "
-            f"(largest successful probe; failed={limits.get('batch_sizes_failed')})."
-        )
+        decisions.append(batch_size_decision(limits))
         decisions.append(
             "Request structured output with response_format type=json_schema, "
             "strict=true, additionalProperties=false, schemas shaped like "
