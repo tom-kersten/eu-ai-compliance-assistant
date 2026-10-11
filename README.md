@@ -1,4 +1,5 @@
 # EU AI Compliance Assistant
+[![CI](https://github.com/tom-kersten/eu-ai-compliance-assistant/actions/workflows/ci.yml/badge.svg)](https://github.com/tom-kersten/eu-ai-compliance-assistant/actions/workflows/ci.yml)
 
 ## What and why
 
