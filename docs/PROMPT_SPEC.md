@@ -1,7 +1,7 @@
 # Prompt Requirements (v1)
 
 > Companion to `REFERENCE.md` (behavior) and `ARCHITECTURE.md` (structure).
-> This document specifies what the two LLM prompts must do. It does not contain the prompts. The prompts are drafted against this spec in `backend/src/app/pipeline/prompts/` and tuned with the eval set.
+> This document specifies what the two LLM prompts must do. It does not contain the prompts. The prompts are written against this spec in `backend/src/app/pipeline/prompts/` and tuned with the eval set.
 
 ## 1. Scope
 
@@ -16,7 +16,7 @@ Both calls use structured output (see the schemas in `ARCHITECTURE.md`). The pro
 
 ### Language and terminology
 
-- Instructions are written in English. Output text (answers, clarifying questions, reasons) is in **Dutch**. This is provisional and checked with the eval set.
+- Instructions are written in English. Output text (answers, clarifying questions, reasons) is in **Dutch**.
 - The user is addressed formally (`u`, `uw`).
 - Legal terms follow the provided provision text (for example `aanbieder`, `gebruiksverantwoordelijke`). The model must not translate terms from memory or use English equivalents.
 
@@ -67,7 +67,7 @@ Also supplied, in both prompts: the corpus documents that exist (key, `short_nam
 
 **Must not:** answer the question, request more than the configured cap, or invent refs. Refs that are not among the supplied ones are invalid.
 
-**Reasoning setting:** not yet decided (see open items in `ARCHITECTURE.md`).
+**Reasoning setting:** `low`, measured in `docs/EVAL_RESULTS.md`.
 
 ## 4. Answer prompt (call 2)
 
@@ -103,7 +103,7 @@ Also supplied, in both prompts: the corpus documents that exist (key, `short_nam
 
 ### Reasoning field
 
-`reasoning` comes first in the output. Whether it stays as a short visible rationale or is removed, now that native reasoning is on for this call, is an open item in `ARCHITECTURE.md`. Until then, the prompt asks for a brief rationale of at most a few sentences: which provisions matter and how they combine.
+`reasoning` comes first in the output. Whether it stays as a short visible rationale or is removed, now that native reasoning is on for this call, is an open question in `ARCHITECTURE.md`. Until then, the prompt asks for a brief rationale of at most a few sentences: which provisions matter and how they combine.
 
 ## 5. Testing
 
@@ -112,7 +112,7 @@ Also supplied, in both prompts: the corpus documents that exist (key, `short_nam
 - **Soft check:** article numbers mentioned in an answer's text are compared with the articles in the context, and mismatches are logged as warnings. This is not a failure, because legitimate mentions of unavailable references exist.
 - **Prompt version:** each prompt carries a version string, logged with every call and included in `usage`, so eval results can be tied to a prompt version.
 
-## 6. Out of scope for the first drafts
+## 6. Out of scope
 
 - Few-shot examples. Add them only if the eval set shows a behavior that instructions alone do not fix, and keep them short.
 - Per-document prompt variants.

@@ -14,8 +14,9 @@ REQUIRED_HEADINGS = [
     "Design decisions and trade-offs",
     "Eval results",
     "Known limitations",
-    "Next steps at production scale",
-    "Demo questions",
+    "Roadmap",
+    "Example questions",
+    "Corpus and sources",
 ]
 
 
@@ -32,7 +33,7 @@ def test_readme_and_makefile_targets():
     targets = parse_make_targets(make_text)
 
     readme = root / "README.md"
-    assert readme.exists(), "README.md is required for the assessor-facing docs"
+    assert readme.exists(), "README.md is required"
     content = readme.read_text(encoding="utf8")
 
     # Check required headings exist

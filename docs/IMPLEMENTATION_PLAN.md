@@ -68,7 +68,7 @@ Estimates are rough, include review time, and assume Cursor does the typing. The
 
 **Deliverables:**
 - Directory layout from `ARCHITECTURE.md` section 3, with empty packages.
-- `docs/` and `eval/` populated with the provided documents and `eval_questions.json`.
+- `docs/` and `eval/` populated with the design documents and `eval_questions.json`.
 - `docker-compose.yml` with `db`, `migrate` (a placeholder that exits successfully until T2), `backend`, `frontend`, and the `test` profile (`db-test`, `backend-test`, `frontend-test`). Pinned image tags.
 - Multi-stage Dockerfiles (`runtime` and `dev`), `uv` with a lockfile, non-root user.
 - `Makefile` with the targets from `ARCHITECTURE.md` section 11, each with a `##` description. Targets that need later code may fail with a clear message.
@@ -393,7 +393,7 @@ Estimates are rough, include review time, and assume Cursor does the typing. The
 
 ### T19. README and documentation pass
 
-**Objective:** a README written for the assessors, and documents consistent with what was built.
+**Objective:** a README written for new users and contributors, and documents consistent with what was built.
 
 **Deliverables:**
 - `README.md`: what and why, quickstart for the online and offline profiles, the architecture diagram, key design decisions and trade-offs, eval results, known limitations, and a short "what I would do next at production scale" (consolidated and versioned texts, reranking or hybrid search, multi-turn evaluation, persistence, authentication, observability).

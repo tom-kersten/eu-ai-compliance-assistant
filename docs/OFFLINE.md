@@ -20,7 +20,7 @@ backend does not depend on the vLLM services; point base URLs at them through
    make up-offline
    ```
 
-3. Ingest with the offline embedding endpoint (T9; real ingestion, not a stub).
+3. Ingest with the offline embedding endpoint.
    Use `ingest-reset` to clear and rebuild from scratch:
 
    ```bash

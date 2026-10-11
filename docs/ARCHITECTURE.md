@@ -1,7 +1,7 @@
 # EU AI Compliance Assistant: Architecture (v1)
 
 > Companion to `REFERENCE.md`, which defines scope and behavior. This document defines how the system is built.
-> Status: draft. Items still to be settled are listed in [section 13](#13-open-items).
+> Open questions are listed in [section 13](#13-open-questions).
 
 ## 1. Principles
 
@@ -316,7 +316,7 @@ The pipeline is a set of small functions behind one orchestrator. Each step is t
 
 | Step | Module | Responsibility |
 |---|---|---|
-| Build query | `query.py` | Turns the conversation into the retrieval query (see [open items](#13-open-items)). |
+| Build query | `query.py` | Turns the conversation into the retrieval query (see [open questions](#13-open-questions)). |
 | Retrieve | `retrieve.py` | Embeds the query, runs vector search, applies top-k (10) and the similarity threshold. |
 | Select (call 1) | `select.py` | Prompt, `SelectionResult` schema, validation that keep and discard refer to retrieved provisions. |
 | Resolve | `resolve.py` | Exact lookup of requested provisions, deduplication, cap, single round, unavailable list. |
@@ -425,7 +425,7 @@ The API checks for client disconnection between steps and stops calling the LLM 
 
 Responses use `Cache-Control: no-cache`. There is no reverse proxy in v1, so no further buffering concerns.
 
-**Request id.** Every request accepts an optional `X-Request-Id` header (printable ASCII, no whitespace, max 128 characters). When missing or invalid, the API generates a UUID. The same value is echoed on every response, including SSE streams, and is attached to every log record for that request.
+**Request id.** Every request accepts an optional `X-Request-Id` header (printable ASCII, no whitespace, max 128 characters). When missing or invalid, the API generates a UUID. The same value is echoed on every response, including SSE streams, and is attached to every log record for that request. Questions may contain confidential system descriptions, so logs record request ids, step timings, and token counts, and message content only at debug level.
 
 **`POST /v1/ask` order.** FastAPI validates the body first (`extra="forbid"`); a bad shape returns 422 and never opens a stream or runs a health check. A live health check then runs. Any health failure returns HTTP 503 with `{"code":"<reason>","message":"<short>"}` and no `text/event-stream` body. Otherwise the response is `text/event-stream` with `Cache-Control: no-cache` and the echoed `X-Request-Id`, iterating the orchestrator. Orchestrator `error` events pass through and close the stream. Exceptions that escape the generator are mapped to a single `error` event (`selection_invalid`, `answer_invalid`, `provider_error`, or `internal_error`) and the stream closes. After each yielded event the API checks for client disconnect and stops so no further step or LLM call starts.
 
@@ -487,7 +487,7 @@ All configuration is environment variables. `.env.example` holds the online defa
 | `SPLIT_TOKEN_LIMIT` | `30000` | |
 | `PROMPT_TOKEN_BUDGET` | per profile | Lower-ranked chunks are dropped above it. Offline: derive from `LLM_MAX_MODEL_LEN` (about half); see `docs/OFFLINE.md`. |
 | `RETRIEVAL_HISTORY_TURNS` | `5` | Number of most recent user messages used to form the retrieval query. |
-| `LLM_TIMEOUT_SECONDS`, `LLM_MAX_RETRIES` | `120`, `1` | |
+| `LLM_TIMEOUT_SECONDS`, `LLM_MAX_RETRIES` | `120`, `1` | Deadline for each whole LLM attempt, including a response the provider keeps alive but never finishes, and the number of retries after a timeout, 429, 5xx, or unparseable output. |
 | `SERVING_PROFILE` | `online` | Which serving profile to record in index_meta (`online` or `offline`). |
 
 Compose-only variables for the `offline` profile (interpolated by Compose into the vLLM `command`; **not** in `app/config.py`):
@@ -650,11 +650,8 @@ The detailed task breakdown, with acceptance criteria per task, is in `IMPLEMENT
 
 The offline profile is last on purpose. It is configuration and documentation rather than code, and it needs GPU hardware to test.
 
-## 13. Open items
+## 13. Open questions
 
 - **Retrieval query for follow-ups.** Vector search on "and if we are the deployer?" finds nothing useful. v1 forms the query from the last five user messages (`RETRIEVAL_HISTORY_TURNS=5`). The risk is the opposite one: after a change of topic within a session, older questions dilute the query. The eval set is single-turn for now, so this behavior is covered by unit tests of the query builder only, and the two risks stay untested end to end.
 - **Reasoning settings.** Decided: `low` for selection and `medium` for the final answer (`docs/EVAL_RESULTS.md`). Still open: the vLLM parameter mapping, and whether the explicit `reasoning` field in `AnswerResult` is still needed now that native reasoning is on, or is kept only as a short visible rationale.
-- **Prompt language** (English with Dutch output, provisional), checked against the eval set.
-- **Logging of user input.** Questions may contain confidential system descriptions, so logs record request ids, step timings, and token counts, and message content only at debug level.
-- **Embedding task instruction** wording, and its exact format per the model card.
-- **vLLM version and flags** for both self-hosted models.
+- **vLLM flags on real hardware.** The image version and flags for both self-hosted models are pinned and documented in `docs/OFFLINE.md`, but not yet verified in a live run on GPU hardware.

@@ -1,6 +1,6 @@
 # EU AI Compliance Assistant: High-Level Reference (v1)
 
-> Status: draft for v1. Scope and decisions are fixed unless listed under [Open decisions](#14-open-decisions).
+> Scope and decisions for v1 are fixed. Tuned values and deployment choices are listed in [section 14](#14-tuned-values-and-deployment-choices).
 > This document covers *what* the system is and does. Architecture and implementation details belong in separate documents.
 
 ## 1. Purpose
@@ -182,11 +182,11 @@ Development is test-driven. No feature is considered done without tests written 
 
 Unit and API tests run against fake LLM and embedding providers, so they are deterministic and need no network. Tests against real providers (hosted or self-hosted) are a separate, opt-in suite.
 
-## 14. Open decisions
+## 14. Tuned values and deployment choices
 
 Measured values for the similarity threshold (`0.5959`), the top-10 ceiling, the added-provision cap (`1`), selection reasoning (`low`), and the structured-output retry budget are recorded in `docs/EVAL_RESULTS.md`.
 
-- **Quantization documentation and defaults**, including the default prompt budget for the offline profile: deferred to the end of the project.
+Quantization and the offline prompt budget are the deployer's choice. Options, defaults, and the budget rule are documented in `docs/OFFLINE.md`.
 
 ## 15. Extension points (designed for, not built)
 

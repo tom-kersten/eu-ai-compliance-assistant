@@ -2,10 +2,18 @@
 
 ## What and why
 
-This repository implements a Dutch-language Q&A assistant over four EU legal texts
-(AI-verordening, AVG, CRA, Digitale omnibus inzake AI). It is a small, test-driven
-proof-of-concept that demonstrates retrieval from a legal corpus, a two-step LLM
-pipeline (selection + answer), and a Streamlit frontend for assessors.
+A Dutch-language assistant that answers questions about four EU legal texts: the
+AI-verordening, the AVG, the CRA, and the Digitale omnibus inzake AI. It is meant
+for product owners, engineers, and compliance leads at companies that build or
+run AI applications.
+
+Every answer is grounded in the legal text and cites the provisions it relies on,
+which you can expand to read in full. When your situation is unclear,
+the assistant asks a clarifying question first. When the corpus does not cover a
+question, it says so instead of guessing. It explains provisions and points to
+the source; whether you comply remains your decision.
+
+It runs with a hosted model through OpenRouter, or fully self-hosted with vLLM.
 
 ## Quickstart (online)
 
@@ -90,27 +98,53 @@ The README does not introduce new numbers; it links to the canonical report file
 - The retrieval threshold was tuned on a small eval set; some misses remain
   (notably Q06–Q08 retrieval gaps recorded in the eval reports).
 - LLM output is not deterministic, so individual eval questions can flip between
-  runs (Q05 in particular; see the eval report).
+  runs (Q05 and Q08 in particular; see the eval report).
 - Offline (vLLM) profile is documented but unverified without GPU hardware.
 - The corpus is not a consolidated single document; provenance and versioning
   are manual via the manifest.
 
-## Next steps at production scale
+## Roadmap
 
 - Consolidate and version the legal texts; sign each snapshot.
 - Add reranking or a hybrid sparse + dense retrieval layer.
 - Multi-turn evaluation and user studies for clarifying questions.
 - Persistence, authentication, and observability for production APIs.
 
-## Demo questions
-
-Dutch, verbatim:
+## Example questions
 
 - Wat is het verschil tussen een aanbieder en een gebruiksverantwoordelijke volgens de AI-verordening?
 - Moeten wij gebruikers laten weten dat ze met een chatbot praten?
 - Is een AI-systeem dat sollicitaties filtert een AI-systeem met een hoog risico?
-- Wij gebruiken AI om cv's te screenen. Wat moeten wij doen om aan de regels te voldoen? (expected: clarify)
-- Welke eisen stelt de Colorado AI Act aan bedrijven? (expected: cannot_answer)
+- Wij gebruiken AI om cv's te screenen. Wat moeten wij doen om aan de regels te voldoen? (asks a clarifying question first)
+- Welke eisen stelt de Colorado AI Act aan bedrijven? (outside the corpus, so it says it cannot answer)
+
+## Corpus and sources
+
+The legal texts in `corpus/raw/` are the Dutch-language versions published on
+[EUR-Lex](https://eur-lex.europa.eu/), © European Union, 1998–2026, reused under
+Commission Decision 2011/833/EU:
+
+| Document | Version used |
+|---|---|
+| AI-verordening, Verordening (EU) 2024/1689 | Consolidated text of 27 July 2026 |
+| AVG, Verordening (EU) 2016/679 | Consolidated text of 4 May 2016 |
+| CRA, Verordening (EU) 2024/2847 | Consolidated text of 20 November 2024 |
+| Digitale omnibus inzake AI, Verordening (EU) 2026/1744 | Official Journal text (recitals and Article 4) |
+
+Only the texts published in the Official Journal of the European Union are
+authentic. Consolidated versions are documentation tools. Ingestion changes only
+whitespace and removes amendment markers; the wording is never edited.
+`corpus/manifest.yaml` lists which file and which parts are indexed.
+
+The MIT license in `LICENSE` covers the code and documentation in this
+repository, not the legal texts.
+
+## How it was built
+
+The project was built with AI coding agents (Cursor and Claude Code), working
+test-first from the design documents in `docs/`: one task at a time from
+[docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md), with the rules in
+[AGENTS.md](AGENTS.md) and `.cursor/rules/`.
 
 ## Tests and continuous integration
 

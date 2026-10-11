@@ -4,7 +4,7 @@
 
 A Dutch-language Q&A assistant over four EU legal texts (AI-verordening, AVG, CRA, Digitale omnibus inzake AI) for companies that build or run AI applications. Streamlit frontend, FastAPI backend, Postgres with pgvector, everything in Docker.
 
-It is a technical assessment for an AI engineering consultancy role. Clarity, tests, and sound trade-offs matter more than breadth.
+It explains and cites provisions; it does not make compliance decisions. Clarity, tests, and sound trade-offs matter more than breadth.
 
 ## Source of truth
 

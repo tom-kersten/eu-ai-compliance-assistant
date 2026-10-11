@@ -1,10 +1,10 @@
-# Evaluation questions (draft)
+# Evaluation questions
 
-Nine Dutch questions for the v1 evaluation set, written against the Dutch consolidated texts supplied (AI-verordening consolidated 27 July 2026, AVG, CRA, Omnibus).
+Nine Dutch questions for the v1 evaluation set, written against the Dutch texts in `corpus/raw/` (AI-verordening consolidated 27 July 2026, AVG, CRA, Omnibus).
 
 **Identifiers** follow the parsed corpus: `AI-verordening:art_6`, `AI-verordening:anx_III`, `AVG:art_35`, `CRA:art_12`, `Omnibus:rct_40`. The unit is the article or annex, per the chunking rule.
 
-**Expectations.** `must` lists provisions that must be in the final context. `via reference` marks those that the text of another provision names explicitly, so they test the selection step even if vector search misses them. Which ones vector search finds on its own is measured when the first retrieval run is possible. The quoted Dutch text is there for you to check each expectation against the source.
+**Expectations.** `must` lists provisions that must be in the final context. `via reference` marks those that the text of another provision names explicitly, so they test the selection step even if vector search misses them. Which ones vector search finds on its own is measured in `docs/EVAL_RESULTS.md`. The quoted Dutch text lets you check each expectation against the source.
 
 | # | Type | Expected behavior | Question |
 |---|---|---|---|
