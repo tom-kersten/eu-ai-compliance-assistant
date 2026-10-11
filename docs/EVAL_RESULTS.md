@@ -142,3 +142,23 @@ With those fixed, `make eval` (hosted, `qwen/qwen3.8-27b`, same retrieval settin
 | Q09 | cannot_answer | cannot_answer | yes | yes | yes | 0 | 7.4 |
 
 Behavior matches **9/9**, including Q05, which missed behavior in the `prompt_eval.py` run above. `vector_hit`/`selection_hit` here are computed slightly differently than the table above (strict "all must-refs in `kept`+`added`" rather than allowing for retrieval-ranked recovery), so Q06-Q08 show `no` despite answering correctly — consistent with, not a contradiction of, the retrieval gaps already documented for those three questions. Q06's 3 calls reflect one retried answer-step attempt, same transient-JSON pattern noted above. Report: `eval/reports/<timestamp>.json`.
+
+### Run-to-run variance
+
+A second `make eval` on 2026-10-11, from a freshly built stack with a newly ingested index and the same configuration, matched behavior on **7/9**:
+
+| Question | Expected | Actual | Behavior match | Vector hit | Selection hit | LLM calls | Latency (s) |
+|---|---|---|---|---|---|---|---|
+| Q01 | answer | answer | yes | yes | yes | 2 | 31.6 |
+| Q02 | answer | answer | yes | yes | yes | 2 | 25.6 |
+| Q03 | answer | answer | yes | yes | yes | 2 | 33.6 |
+| Q04 | answer | answer | yes | yes | yes | 2 | 36.7 |
+| Q05 | answer | clarify | no | yes | yes | 2 | 105.6 |
+| Q06 | answer | answer | yes | no | yes | 2 | 44.3 |
+| Q07 | answer | answer | yes | no | yes | 2 | 21.0 |
+| Q08 | clarify | answer | no | no | no | 2 | 104.3 |
+| Q09 | cannot_answer | cannot_answer | yes | yes | yes | 0 | 5.0 |
+
+Retrieval is deterministic for a given index, and the vector hits match the run above. The differences come from the two LLM steps. Q05 and Q08 sit on the boundary between answering and asking a clarifying question: whether the stated situation is specific enough is a judgment call, and the model makes it differently between runs. Selection also varies, so Q06 and Q07 recovered their expected provisions this time. A single run is therefore one sample, not a stable score. A reliable figure would need several runs per question, reported as a rate.
+
+This run also completed without hangs after `LLM_TIMEOUT_SECONDS` became a deadline on each whole LLM attempt. Before that change, a provider that kept the connection alive without finishing could stall `make eval` indefinitely.
