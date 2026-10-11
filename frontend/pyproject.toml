@@ -4,14 +4,14 @@ version = "0.1.0"
 description = "EU AI compliance assistant UI"
 requires-python = ">=3.12"
 dependencies = [
-    "streamlit>=1.64.0",
+    "streamlit>=1.65.0",
     "httpx>=0.24.0",
 ]
 
 [dependency-groups]
 dev = [
     "pytest>=9.1.1",
-    "ruff>=0.16.9",
+    "ruff>=0.16.10",
 ]
 
 [tool.pytest.ini_options]
