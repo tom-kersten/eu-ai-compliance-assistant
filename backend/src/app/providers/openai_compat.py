@@ -110,11 +110,15 @@ class OpenRouterAdapter(Embedder, LLM):
         while True:
             try:
                 logger.debug("LLM request prepared", extra={"model": body.get("model")})
-                resp = await self.client.post(
-                    url,
-                    json=body,
-                    headers=self._auth_headers(self.settings.llm_api_key),
-                )
+                # httpx's timeout only bounds the gap between bytes. OpenRouter
+                # keeps the connection alive with whitespace while a model works,
+                # so a hung model would never time out without this deadline.
+                async with asyncio.timeout(self.settings.llm_timeout_seconds):
+                    resp = await self.client.post(
+                        url,
+                        json=body,
+                        headers=self._auth_headers(self.settings.llm_api_key),
+                    )
                 if resp.status_code == 429 or resp.status_code >= 500:
                     raise httpx.HTTPStatusError(
                         "retryable",
@@ -130,6 +134,7 @@ class OpenRouterAdapter(Embedder, LLM):
             except (
                 httpx.HTTPStatusError,
                 httpx.TimeoutException,
+                TimeoutError,
                 json.JSONDecodeError,
                 KeyError,
             ) as exc:

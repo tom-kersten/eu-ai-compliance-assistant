@@ -185,3 +185,46 @@ async def test_openrouter_llm_omits_reasoning_when_effort_is_off() -> None:
     assert "reasoning" not in captured[0]
     assert "reasoning" not in captured[1]
     await client.aclose()
+
+
+class _KeepAliveBody(httpx.AsyncByteStream):
+    """A body that sends a byte now and then but never finishes, like a
+    provider that keeps the connection alive while the model hangs."""
+
+    async def __aiter__(self):
+        while True:
+            await asyncio.sleep(0.01)
+            yield b" "
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_openrouter_llm_deadline_covers_the_whole_call() -> None:
+    """httpx timeouts only bound the gap between bytes, so a trickling body
+    would never time out. LLM_TIMEOUT_SECONDS must bound each whole attempt."""
+    settings = Settings()
+    settings.llm_timeout_seconds = 0.2
+    settings.llm_max_retries = 1
+    calls = 0
+
+    async def handler(request: httpx.Request) -> httpx.Response:
+        nonlocal calls
+        calls += 1
+        return httpx.Response(200, stream=_KeepAliveBody())
+
+    client = httpx.AsyncClient(transport=httpx.MockTransport(handler))
+    adapter = OpenRouterAdapter(settings)
+    adapter.client = client
+
+    task = asyncio.create_task(
+        adapter.respond(messages=[{"role": "user", "content": "x"}])
+    )
+    done, _ = await asyncio.wait({task}, timeout=5)
+    if not done:
+        task.cancel()
+        pytest.fail("respond() kept waiting on a body that never finishes")
+    with pytest.raises(TimeoutError):
+        task.result()
+    # The deadline counts as a retryable failure, like an httpx timeout.
+    assert calls == 2
+    await client.aclose()
