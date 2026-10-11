@@ -94,7 +94,7 @@ There is no `backend/src/eval` copy. Tests and `make eval` import the root `eval
 | Testing | `pytest`, `pytest-asyncio`, `httpx.MockTransport` for HTTP adapter tests, a throwaway pgvector container (`db-test`) for database tests. |
 | Linting and formatting | `ruff`. |
 | Task runner | `make`, as a thin wrapper around `docker compose` and `pytest` in containers. |
-| Continuous integration | GitHub Actions (`.github/workflows/ci.yml`) on every push and pull request: validates the compose file for both profiles, builds the runtime images, and runs `make lint`, `make test`, and `make test-frontend`. Needs no keys or GPUs. `make test-live` and `make eval` stay manual because they call paid providers. |
+| Continuous integration | GitHub Actions (`.github/workflows/ci.yml`) on every push and pull request: validates the compose file for both profiles, builds the runtime images, and runs `make lint`, `make test`, and `make test-frontend`. Needs no keys or GPUs. `make test-live` and `make eval` stay manual because they call paid providers. Dependabot (`.github/dependabot.yml`) opens monthly update PRs for the actions, the uv lockfiles, and the Docker images, except the vLLM image, which needs verification on GPU hardware. |
 
 ## 5. Data model
 

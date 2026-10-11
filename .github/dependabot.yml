@@ -1,0 +1,36 @@
+# Monthly update PRs for every pinned dependency. CI checks each PR.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+
+  - package-ecosystem: uv
+    directories:
+      - /backend
+      - /frontend
+    schedule:
+      interval: monthly
+    groups:
+      python:
+        patterns: ["*"]
+
+  # Base images in the backend and frontend Dockerfiles.
+  - package-ecosystem: docker
+    directories:
+      - /backend
+      - /frontend
+    schedule:
+      interval: monthly
+
+  # Service images in docker-compose.yml.
+  - package-ecosystem: docker-compose
+    directory: /
+    schedule:
+      interval: monthly
+    ignore:
+      # vLLM flags change between versions, and CI cannot run the offline
+      # profile. Bump it by hand after verifying it on GPU hardware
+      # (docs/OFFLINE.md).
+      - dependency-name: vllm/vllm-openai

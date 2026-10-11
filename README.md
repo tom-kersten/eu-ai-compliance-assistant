@@ -168,6 +168,11 @@ push and pull request, and validates the compose file for both profiles. See
 [.github/workflows/ci.yml](.github/workflows/ci.yml). Evaluation reports are
 written to `eval/reports/` (git-ignored).
 
+Dependabot opens monthly update PRs for the GitHub Actions, the Python lockfiles,
+and the Docker images ([.github/dependabot.yml](.github/dependabot.yml)). The
+vLLM image is excluded: bump it by hand after verifying the offline profile on
+GPU hardware.
+
 ## Contributing
 
 Work test-first: write a failing test, see it fail, then write the code. Run
