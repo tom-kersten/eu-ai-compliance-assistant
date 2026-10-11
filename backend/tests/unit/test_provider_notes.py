@@ -91,7 +91,7 @@ def test_render_notes_covers_every_check() -> None:
             "embedding_context_length": 32768,
             "llm_context_length": 1000000,
         },
-        decisions_for_t8=[
+        decisions=[
             "Send dimensions=2000 and verify length.",
             "Prefix queries with the recommended Instruct/Query format.",
         ],
@@ -107,7 +107,8 @@ def test_render_notes_covers_every_check() -> None:
     assert "## 5. Reasoning" in notes
     assert "## 6. Usage fields" in notes
     assert "## 7. Routing" in notes
-    assert "## Decisions for T8" in notes
+    assert "## Implementation decisions" in notes
+    assert "T8" not in notes
     assert f"MAX_HTTP_CALLS = {MAX_HTTP_CALLS}" in notes
     assert "docs/OFFLINE.md" in notes
 
@@ -135,7 +136,7 @@ def test_render_notes_records_dimensions_fallback() -> None:
         reasoning={},
         usage={},
         routing={},
-        decisions_for_t8=[
+        decisions=[
             "dimensions not honored; truncate to 2000 and re-normalize",
         ],
     )

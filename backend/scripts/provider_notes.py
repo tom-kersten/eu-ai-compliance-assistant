@@ -65,7 +65,7 @@ class VerificationReport:
     reasoning: dict[str, Any] = field(default_factory=dict)
     usage: dict[str, Any] = field(default_factory=dict)
     routing: dict[str, Any] = field(default_factory=dict)
-    decisions_for_t8: list[str] = field(default_factory=list)
+    decisions: list[str] = field(default_factory=list)
 
 
 def _yamlish(value: Any, indent: int = 0) -> list[str]:
@@ -117,8 +117,7 @@ def render_notes(report: VerificationReport) -> str:
         lines.extend(
             [
                 "",
-                f"dimensions parameter was **not honored**. Fallback for T8: "
-                f"{fallback}.",
+                f"dimensions parameter was **not honored**. Fallback: {fallback}.",
             ]
         )
     elif report.dimensions.get("honored") is True:
@@ -144,7 +143,7 @@ def render_notes(report: VerificationReport) -> str:
     lines.extend(
         [
             "",
-            "T8 must parse only `message.content`. Do not store or return "
+            "The adapter must parse only `message.content`. Do not store or return "
             "reasoning text.",
         ]
     )
@@ -155,9 +154,9 @@ def render_notes(report: VerificationReport) -> str:
     lines.extend(["", "## 7. Routing", ""])
     lines.extend(_yamlish(report.routing))
 
-    lines.extend(["", "## Decisions for T8", ""])
-    if report.decisions_for_t8:
-        lines.extend(f"- {item}" for item in report.decisions_for_t8)
+    lines.extend(["", "## Implementation decisions", ""])
+    if report.decisions:
+        lines.extend(f"- {item}" for item in report.decisions)
     else:
         lines.append("- (none recorded)")
     lines.append("")

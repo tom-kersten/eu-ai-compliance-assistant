@@ -797,9 +797,7 @@ class ProviderVerifier:
             "Embeddings request shape: `dimensions` is a top-level field on the "
             "request body, never nested under a `parameters` object. `input` "
             "must always be a JSON array, even for a single text - a bare "
-            "string is rejected with HTTP 400 (OpenRouter error code 20015). "
-            "Both were real bugs found after T8/verification shipped with the "
-            "wrong shapes; code against this confirmed shape, not an assumed one."
+            "string is rejected with HTTP 400 (OpenRouter error code 20015)."
         )
         if dimensions.get("honored"):
             decisions.append(
@@ -906,7 +904,7 @@ class ProviderVerifier:
                 reasoning=reasoning,
                 usage=usage,
                 routing=routing,
-                decisions_for_t8=decisions,
+                decisions=decisions,
             )
             self.write_outputs(report)
             return 0

@@ -9,7 +9,7 @@ from . import load_prompt
 from .provision_format import format_provision
 from .situation_format import format_situation
 
-SELECTION_PROMPT_VERSION = "T18v3"
+SELECTION_PROMPT_VERSION = "v3"
 
 
 def build_selection_prompt(

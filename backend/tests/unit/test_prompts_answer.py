@@ -1,3 +1,4 @@
+import re
 from datetime import date
 from pathlib import Path
 
@@ -37,7 +38,7 @@ def _fixture_messages() -> list[Message]:
 def test_build_answer_prompt_contains_provisions_once():
     msgs = _fixture_messages()
     prompt = msgs[-1].content
-    assert ANSWER_PROMPT_VERSION.startswith("T18")
+    assert re.fullmatch(r"v\d+", ANSWER_PROMPT_VERSION)
     assert ANSWER_PROMPT_VERSION in prompt
     assert prompt.count('<provision ref="DOC:art_1">') == 1
     assert prompt.count('<provision ref="DOC:art_2">') == 1

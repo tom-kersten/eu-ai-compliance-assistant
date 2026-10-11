@@ -88,9 +88,9 @@ Both rates are 10/10, so `LLM_MAX_RETRIES` stays 1: one retry remains for a rare
 
 Self-hosted (`http://vllm-llm:8000/v1`): not running during this measurement.
 
-## Prompt tuning (T18)
+## Prompt tuning
 
-Hosted run against the committed retrieval settings above. Prompts: selection `T18v3`, answer `T18v3`. Report: `backend/src/eval/reports/prompt_eval.json` (Q06 answer step retried once after a `JSONDecodeError` and merged from a single-question re-run).
+Hosted run against the committed retrieval settings above. Prompts: selection `v3`, answer `v3`. Report: `eval/reports/prompt_eval.json` (Q06 answer step retried once after a `JSONDecodeError` and merged from a single-question re-run).
 
 A context hit means every `must` ref is in the final context (kept plus added). Behavior match means the final action equals `expected_behavior`. Q09 must make zero LLM calls.
 
@@ -121,13 +121,13 @@ Answers for Q01–Q04, Q06, and Q07 are in Dutch, address the user formally, and
 ### Prompt and resolve changes that moved the needle
 
 - Selection and answer prompts rewritten to match `PROMPT_SPEC` (keep/discard, clarify conditions, no role inference from “gebruiken”, bare request labels).
-- `normalize_label` strips common prefixes (`Artikel15`, `art.6`, `bijlage III`) so requested provisions resolve to indexed refs. That fixed Q06 `art_15` and Q07 `art_113` context misses from the earlier T18v2 run.
+- `normalize_label` strips common prefixes (`Artikel15`, `art.6`, `bijlage III`) so requested provisions resolve to indexed refs. That fixed Q06 `art_15` and Q07 `art_113` context misses from the run with the `v2` prompts.
 
-## Full-stack `make eval` run (first real run through the production path)
+## Full-stack `make eval` run
 
-Everything above ran through bespoke scripts (`backend/scripts/calibrate.py`, `backend/scripts/prompt_eval.py`) that call OpenRouter directly rather than through `app.providers.openai_compat.OpenRouterAdapter`. Fixing T14 (the `make eval` Makefile target was a stub until then) finally exercised `app.pipeline.orchestrator.run` together with a real `Repository` and the real adapter for the first time, which surfaced three adapter bugs that had been invisible because nothing had ever called that code path with real credentials: a wrong endpoint (`/responses` instead of `/chat/completions`), a `response_format` shape that didn't match the one `make verify-providers` actually verified, and — the one that mattered — `respond()` returning the raw provider envelope instead of the parsed `message.content`, so every real structured-output call was guaranteed to fail validation. All three are fixed in `openai_compat.py`.
+The sections above used standalone scripts (`backend/scripts/calibrate.py`, `backend/scripts/prompt_eval.py`) that call OpenRouter directly. `make eval` runs the production path instead: the orchestrator, the repository, and the provider adapter.
 
-With those fixed, `make eval` (hosted, `qwen/qwen3.8-27b`, same retrieval settings as above):
+`make eval` (hosted, `qwen/qwen3.8-27b`, same retrieval settings as above):
 
 | Question | Expected | Actual | Behavior match | Vector hit | Selection hit | LLM calls | Latency (s) |
 |---|---|---|---|---|---|---|---|
@@ -160,5 +160,3 @@ A second `make eval` on 2026-10-11, from a freshly built stack with a newly inge
 | Q09 | cannot_answer | cannot_answer | yes | yes | yes | 0 | 5.0 |
 
 Retrieval is deterministic for a given index, and the vector hits match the run above. The differences come from the two LLM steps. Q05 and Q08 sit on the boundary between answering and asking a clarifying question: whether the stated situation is specific enough is a judgment call, and the model makes it differently between runs. Selection also varies, so Q06 and Q07 recovered their expected provisions this time. A single run is therefore one sample, not a stable score. A reliable figure would need several runs per question, reported as a rate.
-
-This run also completed without hangs after `LLM_TIMEOUT_SECONDS` became a deadline on each whole LLM attempt. Before that change, a provider that kept the connection alive without finishing could stall `make eval` indefinitely.

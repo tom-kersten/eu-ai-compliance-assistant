@@ -1,4 +1,4 @@
-Selection prompt version: T18v3
+Selection prompt version: v3
 
 You select which retrieved legal provisions to keep for answering a Dutch compliance question. You do not answer the question.
 

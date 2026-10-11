@@ -97,7 +97,7 @@ dimensions parameter was **honored**. Send `dimensions` from configuration and v
 - failure_modes:
   (none)
 
-T8 must parse only `message.content`. Do not store or return reasoning text.
+The adapter must parse only `message.content`. Do not store or return reasoning text.
 
 ## 6. Usage fields
 
@@ -133,9 +133,9 @@ T8 must parse only `message.content`. Do not store or return reasoning text.
 - embedding_context_length: None
 - llm_context_length: 1000000
 
-## Decisions for T8
+## Implementation decisions
 
-- Embeddings request shape: `dimensions` is a top-level field on the request body, never nested under a `parameters` object. `input` must always be a JSON array, even for a single text - a bare string is rejected with HTTP 400 (OpenRouter error code 20015). Both were real bugs found after T8/verification shipped with the wrong shapes; code against this confirmed shape, not an assumed one.
+- Embeddings request shape: `dimensions` is a top-level field on the request body, never nested under a `parameters` object. `input` must always be a JSON array, even for a single text - a bare string is rejected with HTTP 400 (OpenRouter error code 20015).
 - Send dimensions=2000 on every embeddings request and raise if the returned length differs.
 - Query instruction did not improve separation on the probe set; still apply the model-card Instruct/Query format with the legal task wording for consistency: `Given a Dutch question about EU AI, privacy, or cybersecurity law, retrieve the relevant statutory provision`.
 - Use embedding batch size None (largest successful probe; failed=[1]).

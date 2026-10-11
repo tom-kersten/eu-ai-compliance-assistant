@@ -1,6 +1,6 @@
 """Run the eval set with the current selection and answer prompts.
 
-Embeds the corpus once (status line omitted, matching T17), retrieves with
+Embeds the corpus once (without the status line), retrieves with
 the committed threshold and top_k, then calls the real select / resolve /
 answer steps against OpenRouter chat/completions. Writes a JSON report.
 Never prints API keys.

@@ -29,8 +29,6 @@ def test_up_offline_uses_profile_and_vllm_services() -> None:
     assert "--profile offline" in recipe
     assert "vllm-llm" in recipe
     assert "vllm-embed" in recipe
-    assert "come in T20" not in recipe
-    assert "come in T20" not in text.split("up-offline:")[1].split("\n")[0]
 
 
 def test_ingest_and_test_live_honour_env_file() -> None:

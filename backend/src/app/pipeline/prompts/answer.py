@@ -9,7 +9,7 @@ from . import load_prompt
 from .provision_format import format_provision
 from .situation_format import format_situation
 
-ANSWER_PROMPT_VERSION = "T18v3"
+ANSWER_PROMPT_VERSION = "v3"
 
 UNAVAILABLE_REASON_TEXT = {
     "not_indexed": "not in the corpus (not indexed)",
