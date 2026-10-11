@@ -1,5 +1,7 @@
 # Implementation Plan (v1)
 
+> **Status: complete.** Every task below is implemented. The plan is kept as the record of how v1 was built and of the decisions and acceptance criteria behind each part. Open work is listed under "Contributing" in the README.
+
 > Each task is handed to Cursor, which produces a local build plan and implements it test-first.
 > Scope and behavior: `REFERENCE.md`. Structure: `ARCHITECTURE.md`. Prompts: `PROMPT_SPEC.md`. Rules: `AGENTS.md` and `.cursor/rules/`.
 

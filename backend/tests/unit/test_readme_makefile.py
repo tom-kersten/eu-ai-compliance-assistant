@@ -17,6 +17,7 @@ REQUIRED_HEADINGS = [
     "Roadmap",
     "Example questions",
     "Corpus and sources",
+    "Contributing",
 ]
 
 

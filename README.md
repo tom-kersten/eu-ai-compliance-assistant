@@ -167,3 +167,26 @@ GitHub Actions runs `make lint`, `make test`, and `make test-frontend` on every
 push and pull request, and validates the compose file for both profiles. See
 [.github/workflows/ci.yml](.github/workflows/ci.yml). Evaluation reports are
 written to `eval/reports/` (git-ignored).
+
+## Contributing
+
+Work test-first: write a failing test, see it fail, then write the code. Run
+everything through `make` (`make test`, `make lint`, `make fmt`); tests and
+tools exist only inside the Docker images. A new setting goes in
+`backend/src/app/config.py`, in both `.env` example files, and in section 10 of
+[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). [AGENTS.md](AGENTS.md) has the
+full set of rules, and `.cursor/rules/` has the conventions per area of the code.
+Both apply to people and coding agents alike.
+
+The design documents in `docs/` are the source of truth. When a change needs
+the code to differ from them, update the documents in the same change.
+
+Where to pick up:
+
+- **Open questions** that need a decision:
+  [docs/ARCHITECTURE.md, section 13](docs/ARCHITECTURE.md#13-open-questions).
+- **Known limitations** and the **roadmap**, above.
+- **Extension points** the design already allows for:
+  [docs/REFERENCE.md, section 15](docs/REFERENCE.md#15-extension-points-designed-for-not-built).
+- **Self-hosted profile:** the vLLM image and flags in
+  [docs/OFFLINE.md](docs/OFFLINE.md#flags) are pinned but not yet verified on GPU hardware.
