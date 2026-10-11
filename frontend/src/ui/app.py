@@ -94,29 +94,24 @@ def main() -> None:
     st.title(strings.PAGE_TITLE)
     st.write(strings.PAGE_HEADING)
 
-    # Streamlit's sidebar is always on the left, so the situation panel is a
-    # right-hand column instead.
-    chat_col, situation_col = st.columns([3, 1])
-    with situation_col:
+    with st.sidebar:
         situation = _render_situation_panel()
 
-    with chat_col:
-        components.render_history(
-            st.session_state["history"], st.session_state.get("progress_events")
-        )
-        last = st.session_state.get("last_response")
-        if isinstance(last, FinalEvent) and last.action == "answer" and last.citations:
-            components.render_citation_expanders(last.citations)
-        elif isinstance(last, ErrorEvent):
-            st.error(strings.message_for_code(last.code))
+    components.render_history(
+        st.session_state["history"], st.session_state.get("progress_events")
+    )
+    last = st.session_state.get("last_response")
+    if isinstance(last, FinalEvent) and last.action == "answer" and last.citations:
+        components.render_citation_expanders(last.citations)
+    elif isinstance(last, ErrorEvent):
+        st.error(strings.message_for_code(last.code))
 
     with st.bottom:
         prompt = st.chat_input(strings.CHAT_INPUT_PLACEHOLDER)
         components.render_footer(st.session_state.get("corpus_snapshot"))
 
     if prompt:
-        with chat_col:
-            _run_ask(prompt.strip(), situation)
+        _run_ask(prompt.strip(), situation)
 
 
 main()

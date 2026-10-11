@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-PAGE_TITLE = "EU AI-nalevingsassistent"
+PAGE_TITLE = "EU Wet en Regelgeving inzake AI Assistent"
 PAGE_HEADING = (
     "Stel een vraag over de AI-verordening, AVG, CRA of Digitale omnibus inzake AI."
 )

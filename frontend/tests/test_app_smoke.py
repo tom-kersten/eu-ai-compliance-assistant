@@ -16,6 +16,7 @@ APP_PATH = Path(__file__).resolve().parents[1] / "src" / "ui" / "app.py"
 
 def _all_markdown(at: AppTest) -> str:
     parts: list[str] = [str(m.value) for m in at.markdown]
+    parts += [str(c.value) for c in at.caption]
     for msg in at.chat_message:
         for child in msg:
             val = getattr(child, "value", None)
@@ -51,28 +52,27 @@ def _app_with_answer_stub(monkeypatch) -> tuple[AppTest, StubClient]:
     return at, stub
 
 
-def test_situation_panel_is_in_right_column_not_sidebar(monkeypatch) -> None:
+def test_situation_panel_is_in_the_sidebar(monkeypatch) -> None:
     at, _ = _app_with_answer_stub(monkeypatch)
 
-    assert not at.sidebar.selectbox
-    assert not at.sidebar.text_input
-    chat_col, situation_col = at.columns[0], at.columns[1]
-    assert situation_col.selectbox[0].label == strings.ROLE_LABEL
-    labels = [ti.label for ti in situation_col.text_input]
+    assert at.sidebar.selectbox[0].label == strings.ROLE_LABEL
+    labels = [ti.label for ti in at.sidebar.text_input]
     assert strings.DOMAIN_LABEL in labels
-    assert not chat_col.selectbox
+    assert not at.main.selectbox
+    assert not at.main.text_input
 
 
-def test_notices_render_below_the_chat_input(monkeypatch) -> None:
+def test_notices_are_two_lines_below_the_chat_input(monkeypatch) -> None:
     at, _ = _app_with_answer_stub(monkeypatch)
 
     children = list(_bottom_block(at).children.values())
     kinds = [type(c).__name__ for c in children]
-    texts = [str(getattr(c, "value", "")) for c in children]
-    input_at = kinds.index("ChatInput")
-    disclaimer_at = texts.index(strings.DISCLAIMER)
-    assert input_at < disclaimer_at
-    assert strings.EU_ASSUMPTION in texts[input_at:]
+    after_input = children[kinds.index("ChatInput") + 1 :]
+    assert [type(c).__name__ for c in after_input] == ["Caption", "Caption"]
+    assert [str(c.value) for c in after_input] == [
+        f"{strings.DISCLAIMER} {strings.EU_ASSUMPTION}",
+        f"**{strings.SNAPSHOT_LABEL}:** 2026-10-01",
+    ]
 
 
 def test_conversation_orders_question_then_progress_then_answer(monkeypatch) -> None:
@@ -81,8 +81,7 @@ def test_conversation_orders_question_then_progress_then_answer(monkeypatch) -> 
     at.chat_input[0].set_value("Wat is artikel 4a?").run()
     assert not at.exception
 
-    chat_col = at.columns[0]
-    kinds = [getattr(c, "type", "") for c in chat_col.children.values()]
+    kinds = [getattr(c, "type", "") for c in at.main.children.values()]
     user_at = kinds.index("chat_message")
     status_at = kinds.index("status")
     answer_at = len(kinds) - 1 - kinds[::-1].index("chat_message")

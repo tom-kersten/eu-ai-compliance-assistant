@@ -96,8 +96,6 @@ def render_citation_expanders(citations: list[dict[str, Any]]) -> None:
 
 
 def render_footer(snapshot_date: str | None = None) -> None:
-    st.divider()
-    st.markdown(strings.DISCLAIMER)
-    st.markdown(strings.EU_ASSUMPTION)
+    st.caption(f"{strings.DISCLAIMER} {strings.EU_ASSUMPTION}")
     date_text = snapshot_date or strings.SNAPSHOT_FALLBACK
-    st.markdown(f"**{strings.SNAPSHOT_LABEL}:** {date_text}")
+    st.caption(f"**{strings.SNAPSHOT_LABEL}:** {date_text}")
